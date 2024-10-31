@@ -60,6 +60,16 @@ public sealed class DiagnosticBag
                      rightType.fullName + "'");
     }
 
+    public void ReportUnknownPostOperator(TextSpan span, string operatorText, TypeSymbol leftType)
+    {
+        if (leftType == TypeSymbol.error)
+        {
+            return;
+        }
+
+        Report(span, "ERROR: Post operator '" + operatorText + "' is not defined for type '" + leftType.fullName + "'");
+    }
+
     public void ReportUnresolvedSymbol(TextSpan span, string name)
     {
         Report(span, "ERROR: Unresolved symbol '" + name + "'");
