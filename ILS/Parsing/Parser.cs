@@ -235,6 +235,14 @@ public sealed class Parser
             Token minusMinusToken = NextToken();
             return new DecrementExpression(left, minusMinusToken);
         }
+        if (Current().type == NodeType.QUESTION_TOKEN)
+        {
+            Token questionToken = NextToken();
+            Expression thenExpression = ParseExpression();
+            Token colonToken = Match(NodeType.COLON_TOKEN);
+            Expression elseExpression = ParseExpression();
+            return new TernaryExpression(left, questionToken, thenExpression, colonToken, elseExpression);
+        }
 
         return left;
     }

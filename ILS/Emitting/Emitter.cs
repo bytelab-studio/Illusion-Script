@@ -237,6 +237,10 @@ public sealed partial class Emitter
         {
             return EmitDeReferenceExpression((BoundDeReferenceExpression)expression);
         }
+        if (expression.type == NodeType.TERNARY_EXPRESSION)
+        {
+            return EmitTernaryExpression((BoundTernaryExpression)expression);
+        }
 
         throw new Exception("Unknown expression");
     }
@@ -581,6 +585,10 @@ public sealed partial class Emitter
         {
             return right;
         }
+        if (expression.expression.returnType.llvmName == expression.returnType.llvmName)
+        {
+            return right;
+        }
 
         string result = NextLabel();
         writer.WriteIntend(result);
@@ -624,6 +632,63 @@ public sealed partial class Emitter
         writer.Write(right);
         writer.Write(", align ");
         writer.WriteLine(expression.returnType.align);
+
+        return result;
+    }
+
+    private string EmitTernaryExpression(BoundTernaryExpression expression)
+    {
+        string startLabel = NextExtLabel();
+
+        writer.WriteIntend("br label %");
+        writer.WriteLine(startLabel);
+
+        writer.Write(startLabel);
+        writer.WriteLine(":");
+
+        string condition = EmitExpression(expression.condition);
+        string trueLabel = NextExtLabel();
+        string falseLabel = NextExtLabel();
+        string endLabel = NextExtLabel();
+
+        writer.WriteIntend("br i1 ");
+        writer.Write(condition);
+        writer.Write(", label %");
+        writer.Write(trueLabel);
+        writer.Write(", label %");
+        writer.WriteLine(falseLabel);
+
+        writer.Write(trueLabel);
+        writer.WriteLine(":");
+
+        string thenValue = EmitExpression(expression.thenExpression);
+        writer.WriteIntend("br label %");
+        writer.WriteLine(endLabel);
+
+        writer.Write(falseLabel);
+        writer.WriteLine(":");
+
+        string elseValue = EmitExpression(expression.elseExpression);
+        writer.WriteIntend("br label %");
+        writer.WriteLine(endLabel);
+
+        writer.Write(endLabel);
+        writer.WriteLine(":");
+
+        string result = NextLabel();
+
+        writer.WriteIntend(result);
+        writer.Write(" = phi ");
+        writer.Write(expression.returnType.llvmName);
+        writer.Write(" [ ");
+        writer.Write(thenValue);
+        writer.Write(", %");
+        writer.Write(trueLabel);
+        writer.Write(" ], [ ");
+        writer.Write(elseValue);
+        writer.Write(", %");
+        writer.Write(falseLabel);
+        writer.WriteLine(" ]");
 
         return result;
     }

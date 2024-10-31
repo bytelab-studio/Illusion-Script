@@ -180,6 +180,11 @@ public sealed class Lexer
             position++;
             return new Token(NodeType.EQUALS_TOKEN, FinishTextSpan(span), "=");
         }
+        if (Current() == '?')
+        {
+            position++;
+            return new Token(NodeType.QUESTION_TOKEN, FinishTextSpan(span), "?");
+        }
 
         position++;
         diagnostics.ReportUnexpectedChar(FinishTextSpan(span), Current());
