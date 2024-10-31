@@ -366,6 +366,10 @@ public sealed class Binder
         {
             return BindDecrementExpression((DecrementExpression)expression);
         }
+        if (expression.type == NodeType.TERNARY_EXPRESSION)
+        {
+            return BindTernaryExpression((TernaryExpression)expression);
+        }
 
         throw new Exception("Unexpected expression");
     }
@@ -569,6 +573,14 @@ public sealed class Binder
         );
 
         return BindAssignmentExpression(assignment);
+    }
+
+    private BoundExpression BindTernaryExpression(TernaryExpression expression)
+    {
+        BoundExpression condition = BindExpectedExpression(expression.condition, TypeSymbol.boolean);
+        BoundExpression thenExpression = BindExpression(expression.thenExpression);
+        BoundExpression elseExpression = BindExpectedExpression(expression.elseExpression, thenExpression.returnType);
+        return new BoundTernaryExpression(condition, thenExpression, elseExpression);
     }
 
     private TypeSymbol BindTypeClause(TypeClause clause)
