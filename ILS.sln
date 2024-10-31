@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ILS.ILSC", "ILS.ILSC\ILS.ILSC.csproj", "{6DDC62A5-77EE-48C0-866B-446D265D2766}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ILS", "ILS\ILS.csproj", "{8B5D6991-4EB2-4039-BC83-DDC3ABEB546B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ILS.LSP", "ILS.LSP\ILS.LSP.csproj", "{DDD39179-C5CB-4342-8F52-D397BE9B33A0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6DDC62A5-77EE-48C0-866B-446D265D2766}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DDC62A5-77EE-48C0-866B-446D265D2766}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DDC62A5-77EE-48C0-866B-446D265D2766}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DDC62A5-77EE-48C0-866B-446D265D2766}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B5D6991-4EB2-4039-BC83-DDC3ABEB546B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B5D6991-4EB2-4039-BC83-DDC3ABEB546B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B5D6991-4EB2-4039-BC83-DDC3ABEB546B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B5D6991-4EB2-4039-BC83-DDC3ABEB546B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDD39179-C5CB-4342-8F52-D397BE9B33A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDD39179-C5CB-4342-8F52-D397BE9B33A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDD39179-C5CB-4342-8F52-D397BE9B33A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDD39179-C5CB-4342-8F52-D397BE9B33A0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

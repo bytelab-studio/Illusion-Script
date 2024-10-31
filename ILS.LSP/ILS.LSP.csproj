@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ILS\ILS.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="OmniSharp.Extensions.LanguageServer" Version="0.19.9" />
+    </ItemGroup>
+
+</Project>
