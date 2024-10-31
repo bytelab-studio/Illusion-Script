@@ -83,11 +83,21 @@ public sealed class Lexer
         }
         if (Current() == '+')
         {
+            if (Peek(1) == '+')
+            {
+                position += 2;
+                return new Token(NodeType.PLUS_PLUS_TOKEN, FinishTextSpan(span), "++");
+            }
             position++;
             return new Token(NodeType.PLUS_TOKEN, FinishTextSpan(span), "+");
         }
         if (Current() == '-')
         {
+            if (Peek(1) == '-')
+            {
+                position += 2;
+                return new Token(NodeType.MINUS_MINUS_TOKEN, FinishTextSpan(span), "--");
+            }
             position++;
             return new Token(NodeType.MINUS_TOKEN, FinishTextSpan(span), "-");
         }

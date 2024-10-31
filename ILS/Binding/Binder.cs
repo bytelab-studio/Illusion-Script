@@ -358,6 +358,14 @@ public sealed class Binder
         {
             return BindReinterpretationExpression((ReinterpretationExpression)expression);
         }
+        if (expression.type == NodeType.INCREMENT_EXPRESSION)
+        {
+            return BindIncrementExpression((IncrementExpression)expression);
+        }
+        if (expression.type == NodeType.DECREMENT_EXPRESSION)
+        {
+            return BindDecrementExpression((DecrementExpression)expression);
+        }
 
         throw new Exception("Unexpected expression");
     }
@@ -527,6 +535,40 @@ public sealed class Binder
         TypeSymbol targetType = BindTypeClause(expression.clause);
 
         return ClassifyConversion(expression.clause.span, boundExpression, targetType, true, true);
+    }
+
+    private BoundExpression BindIncrementExpression(IncrementExpression expression)
+    {
+        AssignmentExpression assignment = new AssignmentExpression(
+            expression.left,
+            new Token(NodeType.EQUALS_TOKEN, expression.plusPlusToken.span, "="),
+            new BinaryExpression(
+                expression.left,
+                new Token(NodeType.PLUS_TOKEN, expression.plusPlusToken.span, "+"),
+                new IntExpression(
+                    new Token(NodeType.INT_TOKEN, expression.plusPlusToken.span, "1")
+                )
+            )
+        );
+
+        return BindAssignmentExpression(assignment);
+    }
+
+    private BoundExpression BindDecrementExpression(DecrementExpression expression)
+    {
+        AssignmentExpression assignment = new AssignmentExpression(
+            expression.left,
+            new Token(NodeType.EQUALS_TOKEN, expression.minusMinusToken.span, "="),
+            new BinaryExpression(
+                expression.left,
+                new Token(NodeType.MINUS_TOKEN, expression.minusMinusToken.span, "-"),
+                new IntExpression(
+                    new Token(NodeType.INT_TOKEN, expression.minusMinusToken.span, "1")
+                )
+            )
+        );
+
+        return BindAssignmentExpression(assignment);
     }
 
     private TypeSymbol BindTypeClause(TypeClause clause)

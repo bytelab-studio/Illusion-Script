@@ -15,13 +15,9 @@ public static class Program
                         
                         let a: u16 = 20;
                         let b: u8 = 30;
-                        while (b != 0) {
-                            if (b == 2) {
-                                break;
-                            }
-                            b = b - 1;
-                        }
                         let c: u32 = a + b;
+                        c++;
+                        b--;
                       }
                       """;
         Console.WriteLine(code);

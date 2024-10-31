@@ -225,6 +225,16 @@ public sealed class Parser
             TypeClause clause = ParseTypeSignature();
             return new ReinterpretationExpression(left, asKeyword, clause);
         }
+        if (Current().type == NodeType.PLUS_PLUS_TOKEN)
+        {
+            Token plusPlusToken = NextToken();
+            return new IncrementExpression(left, plusPlusToken);
+        }
+        if (Current().type == NodeType.MINUS_MINUS_TOKEN)
+        {
+            Token minusMinusToken = NextToken();
+            return new DecrementExpression(left, minusMinusToken);
+        }
 
         return left;
     }
