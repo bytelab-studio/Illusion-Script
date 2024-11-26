@@ -71,122 +71,86 @@ public sealed class Lexer
             NodeType type = GetKeywordType(text);
             return new Token(type, FinishTextSpan(span), text);
         }
-        if (Current() == ';')
-        {
-            position++;
-            return new Token(NodeType.SEMI_TOKEN, FinishTextSpan(span), ";");
-        }
-        if (Current() == ':')
-        {
-            position++;
-            return new Token(NodeType.COLON_TOKEN, FinishTextSpan(span), ":");
-        }
-        if (Current() == '+')
-        {
-            if (Peek(1) == '+')
-            {
-                position += 2;
-                return new Token(NodeType.PLUS_PLUS_TOKEN, FinishTextSpan(span), "++");
-            }
-            position++;
-            return new Token(NodeType.PLUS_TOKEN, FinishTextSpan(span), "+");
-        }
-        if (Current() == '-')
-        {
-            if (Peek(1) == '-')
-            {
-                position += 2;
-                return new Token(NodeType.MINUS_MINUS_TOKEN, FinishTextSpan(span), "--");
-            }
-            position++;
-            return new Token(NodeType.MINUS_TOKEN, FinishTextSpan(span), "-");
-        }
-        if (Current() == '*')
-        {
-            position++;
-            return new Token(NodeType.STAR_TOKEN, FinishTextSpan(span), "*");
-        }
-        if (Current() == '/')
-        {
-            position++;
-            return new Token(NodeType.SLASH_TOKEN, FinishTextSpan(span), "/");
-        }
-        if (Current() == '(')
-        {
-            position++;
-            return new Token(NodeType.LPAREN_TOKEN, FinishTextSpan(span), "/");
-        }
-        if (Current() == ')')
-        {
-            position++;
-            return new Token(NodeType.RPAREN_TOKEN, FinishTextSpan(span), "/");
-        }
-        if (Current() == '{')
-        {
-            position++;
-            return new Token(NodeType.LBRACE_TOKEN, FinishTextSpan(span), "{");
-        }
-        if (Current() == '}')
-        {
-            position++;
-            return new Token(NodeType.RBRACE_TOKEN, FinishTextSpan(span), "}");
-        }
-        if (Current() == '<')
-        {
-            position++;
-            return new Token(NodeType.LANGLE_TOKEN, FinishTextSpan(span), "<");
-        }
-        if (Current() == '>')
-        {
-            position++;
-            return new Token(NodeType.RANGLE_TOKEN, FinishTextSpan(span), ">");
-        }
-        if (Current() == '!')
-        {
-            if (Peek(1) == '=')
-            {
-                position += 2;
-                return new Token(NodeType.BANG_EQUALS_TOKEN, FinishTextSpan(span), "!=");
-            }
-            position++;
-            return new Token(NodeType.BANG_TOKEN, FinishTextSpan(span), "!");
-        }
-        if (Current() == '&')
-        {
-            if (Peek(1) == '&')
-            {
-                position += 2;
-                return new Token(NodeType.AND_AND_TOKEN, FinishTextSpan(span), "&&");
-            }
-            position++;
-            return new Token(NodeType.AND_TOKEN, FinishTextSpan(span), "&");
-        }
-        if (Current() == '|')
-        {
-            if (Peek(1) == '|')
-            {
-                position += 2;
-                return new Token(NodeType.PIPE_PIPE_TOKEN, FinishTextSpan(span), "||");
-            }
-        }
-        if (Current() == '=')
-        {
-            if (Peek(1) == '=')
-            {
-                position += 2;
-                return new Token(NodeType.EQUALS_EQUALS_TOKEN, FinishTextSpan(span), "==");
-            }
 
-            position++;
-            return new Token(NodeType.EQUALS_TOKEN, FinishTextSpan(span), "=");
-        }
-        if (Current() == '?')
-        {
-            position++;
-            return new Token(NodeType.QUESTION_TOKEN, FinishTextSpan(span), "?");
-        }
+		switch(Current()) {
+			case ';':
+				position++;
+				return new Token(NodeType.SEMI_TOKEN, FinishTextSpan(span), ";");
+			case ':':
+				position++;
+				return new Token(NodeType.COLON_TOKEN, FinishTextSpan(span), ":");
+			case '+':
+				if (Peek(1) == '+') {
+					position += 2;
+					return new Token(NodeType.PLUS_PLUS_TOKEN, FinishTextSpan(span), "++");
+				}
+				position++;
+				return new Token(NodeType.PLUS_TOKEN, FinishTextSpan(span), "+");
+			case '-':	
+				if (Peek(1) == '-') {
+					position += 2;
+					return new Token(NodeType.MINUS_MINUS_TOKEN, FinishTextSpan(span), "--");
+				}
+				position++;
+				return new Token(NodeType.MINUS_TOKEN, FinishTextSpan(span), "-");
+			case '*':
+				position++;
+				return new Token(NodeType.STAR_TOKEN, FinishTextSpan(span), "*");
+			case '/':
+				position++;
+				return new Token(NodeType.SLASH_TOKEN, FinishTextSpan(span), "/");	
+			case '?':
+				position++;
+				return new Token(NodeType.QUESTION_TOKEN, FinishTextSpan(span), "?");
+			case '(':
+				position++;
+				return new Token(NodeType.LPAREN_TOKEN, FinishTextSpan(span), "(");
+			case ')':
+				position++;
+				return new Token(NodeType.RPAREN_TOKEN, FinishTextSpan(span), ")");
+			case '{':
+				position++;
+				return new Token(NodeType.LBRACE_TOKEN, FinishTextSpan(span), "{");
+			case '}':
+				position++;
+				return new Token(NodeType.RBRACE_TOKEN, FinishTextSpan(span), "}");
+			case '<':
+				position++;
+				return new Token(NodeType.LANGLE_TOKEN, FinishTextSpan(span), "<");
+			case '>':
+				position++;
+				return new Token(NodeType.RANGLE_TOKEN, FinishTextSpan(span), ">");
+			case '!':
+				if (Peek(1) == '=') {
+					position += 2;
+					return new Token(NodeType.BANG_EQUALS_TOKEN, FinishTextSpan(span), "!=");
+				}
+				position++;
+				return new Token(NodeType.BANG_TOKEN, FinishTextSpan(span), "!");
+			case '=':
+				if (Peek(1) == '=') {
+					position += 2;
+					return new Token(NodeType.EQUALS_EQUALS_TOKEN, FinishTextSpan(span), "==");
+				}
+				position++;
+				return new Token(NodeType.EQUALS_TOKEN, FinishTextSpan(span), "=");
+			case '&':
+				if (Peek(1) == '&') {
+					position += 2;
+					return new Token(NodeType.AND_AND_TOKEN, FinishTextSpan(span), "&&");
+				}
+				position++;
+				return new Token(NodeType.AND_TOKEN, FinishTextSpan(span), "&");
+			case '|':
+				if (Peek(1) == '|') {
+					position += 2;
+					return new Token(NodeType.PIPE_PIPE_TOKEN, FinishTextSpan(span), "||");
+				}
+				position++;
+				return new Token(NodeType.PIPE_TOKEN, FinishTextSpan(span), "|");
+		}
 
-        position++;
+		position++;
         diagnostics.ReportUnexpectedChar(FinishTextSpan(span), Current());
         return new Token(NodeType.ERROR_TOKEN, FinishTextSpan(span), text.Substring(position - 1, 1));
     }
@@ -229,47 +193,30 @@ public sealed class Lexer
 
     private NodeType GetKeywordType(string keyword)
     {
-        if (keyword == "true")
-        {
-            return NodeType.TRUE_KEYWORD;
-        }
-        if (keyword == "false")
-        {
-            return NodeType.FALSE_KEYWORD;
-        }
-        if (keyword == "let")
-        {
-            return NodeType.LET_KEYWORD;
-        }
-        if (keyword == "const")
-        {
-            return NodeType.CONST_KEYWORD;
-        }
-        if (keyword == "if")
-        {
-            return NodeType.IF_KEYWORD;
-        }
-        if (keyword == "else")
-        {
-            return NodeType.ELSE_KEYWORD;
-        }
-        if (keyword == "as")
-        {
-            return NodeType.AS_KEYWORD;
-        }
-        if (keyword == "while")
-        {
-            return NodeType.WHILE_KEYWORD;
-        }
-        if (keyword == "break")
-        {
-            return NodeType.BREAK_KEYWORD;
-        }
-        if (keyword == "continue")
-        {
-            return NodeType.CONTINUE_KEYWORD;
-        }
-
-        return NodeType.IDENTIFIER_TOKEN;
+		switch(keyword) {
+			case "true":
+				return NodeType.TRUE_KEYWORD;
+			case "false":
+				return NodeType.FALSE_KEYWORD;
+			case "let":
+				return NodeType.LET_KEYWORD;
+			case "const":
+				return NodeType.CONST_KEYWORD;
+			case "if":
+				return NodeType.IF_KEYWORD;
+			case "else":
+				return NodeType.ELSE_KEYWORD;
+			case "as":
+				return NodeType.AS_KEYWORD;
+			case "while":
+				return NodeType.WHILE_KEYWORD;
+			case "break":
+				return NodeType.BREAK_KEYWORD;
+			case "continue":
+				return NodeType.CONTINUE_KEYWORD;
+			
+			default:
+				return NodeType.IDENTIFIER_TOKEN;
+		}
     }
 }
