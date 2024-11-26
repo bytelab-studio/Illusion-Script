@@ -51,37 +51,25 @@ public sealed class Binder
 
     public BoundStatement BindStatement(Statement statement)
     {
-        if (statement.type == NodeType.BLOCK_STATEMENT)
-        {
-            return BindBlockStatement((BlockStatement)statement);
-        }
-        if (statement.type == NodeType.VARIABLE_STATEMENT)
-        {
-            return BindVariableStatement((VariableStatement)statement);
-        }
-        if (statement.type == NodeType.EXPRESSION_STATEMENT)
-        {
-            return BindExpressionStatement((ExpressionStatement)statement);
-        }
-        if (statement.type == NodeType.IF_STATEMENT)
-        {
-            return BindIfStatement((IfStatement)statement);
-        }
-        if (statement.type == NodeType.WHILE_STATEMENT)
-        {
-            return BindWhileStatement((WhileStatement)statement);
-        }
-        if (statement.type == NodeType.BREAK_STATEMENT)
-        {
-            return BindBreakStatement((BreakStatement)statement);
-        }
-        if (statement.type == NodeType.CONTINUE_STATEMENT)
-        {
-            return BindContinueStatement((ContinueStatement)statement);
-        }
-
-        throw new Exception("Unexpected statement");
-    }
+		switch(statement.type) {
+			case NodeType.BLOCK_STATEMENT:
+				return BindBlockStatement((BlockStatement)statement);
+			case NodeType.VARIABLE_STATEMENT:
+				return BindVariableStatement((VariableStatement)statement);
+			case NodeType.EXPRESSION_STATEMENT:
+				return BindExpressionStatement((ExpressionStatement)statement);
+			case NodeType.IF_STATEMENT:
+				return BindIfStatement((IfStatement)statement);
+			case NodeType.WHILE_STATEMENT:
+				return BindWhileStatement((WhileStatement)statement);
+			case NodeType.BREAK_STATEMENT:
+				return BindBreakStatement((BreakStatement)statement);
+			case NodeType.CONTINUE_STATEMENT:
+				return BindContinueStatement((ContinueStatement)statement);
+			default:
+        		throw new Exception("Unexpected statement");
+    	}
+	}
 
     private BoundStatement BindBlockStatement(BlockStatement statement)
     {
@@ -322,56 +310,34 @@ public sealed class Binder
 
     private BoundExpression BindExpression(Expression expression)
     {
-        if (expression.type == NodeType.INT_EXPRESSION)
-        {
-            return BindIntExpression((IntExpression)expression);
-        }
-        if (expression.type == NodeType.BOOL_EXPRESSION)
-        {
-            return BindBoolExpression((BoolExpression)expression);
-        }
-        if (expression.type == NodeType.UNARY_EXPRESSION)
-        {
-            return BindUnaryExpression((UnaryExpression)expression);
-        }
-        if (expression.type == NodeType.BINARY_EXPRESSION)
-        {
-            return BindBinaryExpression((BinaryExpression)expression);
-        }
-        if (expression.type == NodeType.PAREN_EXPRESSION)
-        {
-            return BindExpression(((ParenExpression)expression).expression);
-        }
-        if (expression.type == NodeType.ASSIGNMENT_EXPRESSION)
-        {
-            return BindAssignmentExpression((AssignmentExpression)expression);
-        }
-        if (expression.type == NodeType.NAME_EXPRESSION)
-        {
-            return BindNameExpression((NameExpression)expression);
-        }
-        if (expression.type == NodeType.CONVERSION_EXPRESSION)
-        {
-            return BindConversionExpression((ConversionExpression)expression);
-        }
-        if (expression.type == NodeType.REINTERPRETATION_EXPRESSION)
-        {
-            return BindReinterpretationExpression((ReinterpretationExpression)expression);
-        }
-        if (expression.type == NodeType.INCREMENT_EXPRESSION)
-        {
-            return BindIncrementExpression((IncrementExpression)expression);
-        }
-        if (expression.type == NodeType.DECREMENT_EXPRESSION)
-        {
-            return BindDecrementExpression((DecrementExpression)expression);
-        }
-        if (expression.type == NodeType.TERNARY_EXPRESSION)
-        {
-            return BindTernaryExpression((TernaryExpression)expression);
-        }
-
-        throw new Exception("Unexpected expression");
+		switch(expression.type) {
+			case NodeType.INT_EXPRESSION:
+				return BindIntExpression((IntExpression)expression);
+			case NodeType.BOOL_EXPRESSION:
+				return BindBoolExpression((BoolExpression)expression);
+			case NodeType.UNARY_EXPRESSION:	
+				return BindUnaryExpression((UnaryExpression)expression);
+			case NodeType.BINARY_EXPRESSION:
+				return BindBinaryExpression((BinaryExpression)expression);
+			case NodeType.PAREN_EXPRESSION:
+				return BindExpression(((ParenExpression)expression).expression);
+			case NodeType.ASSIGNMENT_EXPRESSION:
+				return BindAssignmentExpression((AssignmentExpression)expression);
+			case NodeType.NAME_EXPRESSION:
+				return BindNameExpression((NameExpression)expression);
+			case NodeType.CONVERSION_EXPRESSION:
+				return BindConversionExpression((ConversionExpression)expression);
+			case NodeType.REINTERPRETATION_EXPRESSION:
+				return BindReinterpretationExpression((ReinterpretationExpression)expression);
+			case NodeType.INCREMENT_EXPRESSION:
+				return BindIncrementExpression((IncrementExpression)expression);
+			case NodeType.DECREMENT_EXPRESSION:
+				return BindDecrementExpression((DecrementExpression)expression);
+			case NodeType.TERNARY_EXPRESSION:
+				return BindTernaryExpression((TernaryExpression)expression);
+			default:
+				throw new Exception("Unexptected expression");
+		}
     }
 
     private BoundExpression BindIntExpression(IntExpression expression)

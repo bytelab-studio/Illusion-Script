@@ -36,39 +36,29 @@ public sealed partial class Emitter
 
     public void EmitStatement(BoundStatement statement)
     {
-        if (statement.type == NodeType.BLOCK_STATEMENT)
-        {
-            EmitBlockStatement((BoundBlockStatement)statement);
-            return;
-        }
-        if (statement.type == NodeType.VARIABLE_STATEMENT)
-        {
-            EmitVariableStatement((BoundVariableStatement)statement);
-            return;
-        }
-        if (statement.type == NodeType.IF_STATEMENT)
-        {
-            EmitIfStatement((BoundIfStatement)statement);
-            return;
-        }
-        if (statement.type == NodeType.WHILE_STATEMENT)
-        {
-            EmitWhileStatement((BoundWhileStatement)statement);
-            return;
-        }
-        if (statement.type == NodeType.BREAK_STATEMENT)
-        {
-            EmitBreakStatement((BoundBreakStatement)statement);
-        }
-        if (statement.type == NodeType.CONTINUE_STATEMENT)
-        {
-            EmitContinueStatement((BoundContinueStatement)statement);
-        }
-        if (statement.type == NodeType.EXPRESSION_STATEMENT)
-        {
-            EmitExpressionStatement((BoundExpressionStatement)statement);
-            return;
-        }
+		switch(statement.type) {
+			case NodeType.BLOCK_STATEMENT:
+				EmitBlockStatement((BoundBlockStatement)statement);
+				break;
+			case NodeType.VARIABLE_STATEMENT:
+				EmitVariableStatement((BoundVariableStatement)statement);
+				break;
+			case NodeType.IF_STATEMENT:
+				EmitIfStatement((BoundIfStatement)statement);
+				break;
+			case NodeType.WHILE_STATEMENT:
+				EmitWhileStatement((BoundWhileStatement)statement);
+				break;
+			case NodeType.BREAK_STATEMENT:
+				EmitBreakStatement((BoundBreakStatement)statement);
+				break;
+			case NodeType.CONTINUE_STATEMENT:
+				EmitContinueStatement((BoundContinueStatement)statement);
+				break;
+	    	case NodeType.EXPRESSION_STATEMENT:
+				EmitExpressionStatement((BoundExpressionStatement)statement);
+				break;
+    	}
     }
 
     private void EmitBlockStatement(BoundBlockStatement statement)
@@ -197,52 +187,32 @@ public sealed partial class Emitter
 
     private string EmitExpression(BoundExpression expression)
     {
-        if (expression.type == NodeType.INT_EXPRESSION)
-        {
-            return EmitIntExpression((BoundIntExpression)expression);
-        }
-        if (expression.type == NodeType.BOOL_EXPRESSION)
-        {
-            return EmitBoolExpression((BoundBoolExpression)expression);
-        }
-        if (expression.type == NodeType.UNARY_EXPRESSION)
-        {
-            return EmitUnaryExpression((BoundUnaryExpression)expression);
-        }
-        if (expression.type == NodeType.BINARY_EXPRESSION)
-        {
-            return EmitBinaryExpression((BoundBinaryExpression)expression);
-        }
-        if (expression.type == NodeType.ASSIGNMENT_EXPRESSION)
-        {
-            return EmitAssignmentExpression((BoundAssignmentExpression)expression);
-        }
-        if (expression.type == NodeType.VARIABLE_EXPRESSION)
-        {
-            return EmitVariableExpression((BoundVariableExpression)expression);
-        }
-        if (expression.type == NodeType.VARIABLE_REFERENCE_EXPRESSION)
-        {
-            return EmitVariableReferenceExpression((BoundVariableReferenceExpression)expression);
-        }
-        if (expression.type == NodeType.CONVERSION_EXPRESSION)
-        {
-            return EmitConversionExpression((BoundConversionExpression)expression);
-        }
-        if (expression.type == NodeType.REINTERPRETATION_EXPRESSION)
-        {
-            return EmitReinterpretationExpression((BoundReinterpretationExpression)expression);
-        }
-        if (expression.type == NodeType.DEREFERENCE_EXPRESSION)
-        {
-            return EmitDeReferenceExpression((BoundDeReferenceExpression)expression);
-        }
-        if (expression.type == NodeType.TERNARY_EXPRESSION)
-        {
-            return EmitTernaryExpression((BoundTernaryExpression)expression);
-        }
-
-        throw new Exception("Unknown expression");
+		switch(expression.type) {
+			case NodeType.INT_EXPRESSION:
+				return EmitIntExpression((BoundIntExpression)expression);
+			case NodeType.BOOL_EXPRESSION:
+				return EmitBoolExpression((BoundBoolExpression)expression);
+			case NodeType.UNARY_EXPRESSION:
+				return EmitUnaryExpression((BoundUnaryExpression)expression);
+			case NodeType.BINARY_EXPRESSION:
+				return EmitBinaryExpression((BoundBinaryExpression)expression);
+			case NodeType.ASSIGNMENT_EXPRESSION:
+				return EmitAssignmentExpression((BoundAssignmentExpression)expression);
+			case NodeType.VARIABLE_EXPRESSION:
+				return EmitVariableExpression((BoundVariableExpression)expression);
+			case NodeType.VARIABLE_REFERENCE_EXPRESSION:
+				return EmitVariableReferenceExpression((BoundVariableReferenceExpression)expression);
+			case NodeType.CONVERSION_EXPRESSION:
+				return EmitConversionExpression((BoundConversionExpression)expression);
+			case NodeType.REINTERPRETATION_EXPRESSION:
+				return EmitReinterpretationExpression((BoundReinterpretationExpression)expression);
+			case NodeType.DEREFERENCE_EXPRESSION:
+				return EmitDeReferenceExpression((BoundDeReferenceExpression)expression);
+			case NodeType.TERNARY_EXPRESSION:
+				return EmitTernaryExpression((BoundTernaryExpression)expression);
+			default:
+				throw new Exception("Unknown expression");
+		}
     }
 
     private string EmitIntExpression(BoundIntExpression expression)
