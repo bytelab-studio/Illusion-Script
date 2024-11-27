@@ -269,6 +269,10 @@ public sealed class Lexer
         {
             return NodeType.CONTINUE_KEYWORD;
         }
+        if (keyword == "function")
+        {
+            return NodeType.FUNCTION_KEYWORD;
+        }
 
         return NodeType.IDENTIFIER_TOKEN;
     }

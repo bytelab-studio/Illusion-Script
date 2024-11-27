@@ -2,6 +2,7 @@
 using System.IO;
 using ILS.Binding;
 using ILS.Binding.Expressions;
+using ILS.Binding.Members;
 using ILS.Binding.Statements;
 using ILS.Binding.Symbols;
 using ILS.IO;
@@ -34,7 +35,27 @@ public sealed partial class Emitter
         return "EL" + extLabelCounter++;
     }
 
-    public void EmitStatement(BoundStatement statement)
+    public void EmitModule(BoundModule module)
+    {
+        foreach (BoundFunctionMember member in module.functions)
+        {
+            EmitFunction(member);
+        }
+    }
+
+    private void EmitFunction(BoundFunctionMember member)
+    {
+        writer.Write("define dso_local ");
+        writer.Write(member.symbol.returnType.llvmName);
+        writer.Write(" ");
+        writer.Write(member.symbol.llvmName);
+        writer.WriteLine("() {");
+        EmitStatement(member.body);
+        writer.WriteLine("    ret void");
+        writer.WriteLine("}");
+    }
+
+    private void EmitStatement(BoundStatement statement)
     {
         if (statement.type == NodeType.BLOCK_STATEMENT)
         {

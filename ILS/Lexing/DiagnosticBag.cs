@@ -36,6 +36,11 @@ public sealed class DiagnosticBag
         Report(span, "ERROR: Unexpected token '" + current + "', expected '" + expected + "'");
     }
 
+    public void ReportUnexpectedToken(TextSpan span, NodeType current)
+    {
+        Report(span, "ERROR: Unexpected token '" + current + "'");
+    }
+
     //
     // Binder
     //

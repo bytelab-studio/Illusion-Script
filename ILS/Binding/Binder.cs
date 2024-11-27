@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ILS.Binding.Expressions;
+using ILS.Binding.Members;
 using ILS.Binding.Operation;
 using ILS.Binding.Statements;
 using ILS.Binding.Symbols;
 using ILS.Lexing;
 using ILS.Parsing.Nodes;
 using ILS.Parsing.Nodes.Expressions;
+using ILS.Parsing.Nodes.Members;
 using ILS.Parsing.Nodes.Statements;
 
 namespace ILS.Binding;
@@ -83,7 +86,7 @@ public sealed class Binder
         throw new Exception("Unexpected statement");
     }
 
-    private BoundStatement BindBlockStatement(BlockStatement statement)
+    private BoundBlockStatement BindBlockStatement(BlockStatement statement)
     {
         scope = new Scope(scope);
 
@@ -639,5 +642,29 @@ public sealed class Binder
 
         diagnostics.ReportUnknownType(clause.span, clause.identifierToken.text);
         return TypeSymbol.error;
+    }
+
+    private static IEnumerable<Member> GetMembers<T>(IEnumerable<T> members, NodeType type) where T : Member => members.Where(member => member.type == type);
+
+    private static BoundFunctionMember BindFunctionMember(BoundModule module, FunctionMember member)
+    {
+        Binder binder = new Binder();
+
+        BoundBlockStatement body = binder.BindBlockStatement(member.body);
+        TypeSymbol returnType = binder.BindTypeClause(member.returnClause);
+        module.diagnostics.diagnostics.AddRange(binder.diagnostics.diagnostics);
+
+        return new BoundFunctionMember(new FunctionSymbol(member.identifierToken.text, returnType), body);
+    }
+
+    public static BoundModule BindMembers(List<Member> members)
+    {
+        BoundModule module = new BoundModule();
+        foreach (FunctionMember member in GetMembers(members, NodeType.FUNCTION_MEMBER))
+        {
+            module.functions.Add(BindFunctionMember(module, member));
+        }
+
+        return module;
     }
 }

@@ -2,6 +2,7 @@
 using ILS.Lexing;
 using ILS.Parsing.Nodes;
 using ILS.Parsing.Nodes.Expressions;
+using ILS.Parsing.Nodes.Members;
 using ILS.Parsing.Nodes.Statements;
 using Expression = ILS.Parsing.Nodes.Expression;
 
@@ -33,9 +34,9 @@ public sealed class Parser
 
     public SyntaxTree Parse()
     {
-        Statement statement = ParseStatement();
+        List<Member> members = ParseMembers();
         Token eof = Match(NodeType.EOF_TOKEN);
-        return new SyntaxTree(diagnostics, statement, eof);
+        return new SyntaxTree(diagnostics, members, eof);
     }
 
 
@@ -66,6 +67,49 @@ public sealed class Parser
 
         diagnostics.ReportUnexpectedToken(Current().span, Current().type, type);
         return new Token(type, Current().span, null);
+    }
+
+    private List<Member> ParseMembers()
+    {
+        List<Member> members = new List<Member>();
+
+        while (Current().type != NodeType.EOF_TOKEN)
+        {
+            Member member = ParseMember();
+            if (member != null)
+            {
+                members.Add(member);
+            }
+            while (Current().type == NodeType.SEMI_TOKEN)
+            {
+                NextToken();
+            }
+        }
+
+        return members;
+    }
+
+    private Member ParseMember()
+    {
+        if (Current().type == NodeType.FUNCTION_KEYWORD)
+        {
+            return ParseFunctionMember();
+        }
+        Token current = NextToken();
+        diagnostics.ReportUnexpectedToken(current.span, current.type);
+        return null;
+    }
+
+    private Member ParseFunctionMember()
+    {
+        Token functionKeyword = Match(NodeType.FUNCTION_KEYWORD);
+        Token identifierToken = Match(NodeType.IDENTIFIER_TOKEN);
+        Token lParenToken = Match(NodeType.LPAREN_TOKEN);
+        Token rParenToken = Match(NodeType.RPAREN_TOKEN);
+        TypeClause returnClause = ParseTypeClause();
+        BlockStatement body = ParseBlockStatement();
+
+        return new FunctionMember(functionKeyword, identifierToken, lParenToken, rParenToken, returnClause, body);
     }
 
     private Statement ParseStatement()

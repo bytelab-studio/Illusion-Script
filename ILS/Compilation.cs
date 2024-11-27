@@ -24,16 +24,15 @@ public sealed class Compilation
             return new CompilationResult(syntax.diagnostics.diagnostics);
         }
 
-        Binder binder = new Binder();
-        BoundStatement boundStatement = binder.BindStatement(syntax.root);
+        BoundModule module = Binder.BindMembers(syntax.root);
 
-        if (binder.Diagnostics().Any())
+        if (module.Diagnostics().Any())
         {
-            return new CompilationResult(binder.Diagnostics());
+            return new CompilationResult(module.Diagnostics());
         }
 
         Emitter emitter = new Emitter(writer);
-        emitter.EmitStatement(boundStatement);
+        emitter.EmitModule(module);
 
         return new CompilationResult(Enumerable.Empty<Diagnostic>());
     }
