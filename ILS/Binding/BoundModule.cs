@@ -6,12 +6,14 @@ namespace ILS.Binding;
 
 public sealed class BoundModule
 {
+    public Scope scope;
     public List<BoundFunctionMember> functions;
     public DiagnosticBag diagnostics;
 
 
     public BoundModule()
     {
+        scope = new Scope(null);
         functions = new List<BoundFunctionMember>();
         diagnostics = new DiagnosticBag();
     }

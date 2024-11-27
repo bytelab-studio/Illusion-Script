@@ -7,11 +7,13 @@ public sealed class Scope
 {
     public Scope parent;
     private List<VariableSymbol> variables;
+    private List<FunctionSymbol> functions;
 
     public Scope(Scope parent)
     {
         this.parent = parent;
         this.variables = new List<VariableSymbol>();
+        this.functions = new List<FunctionSymbol>();
     }
 
     public bool TryDeclareVariable(VariableSymbol variable)
@@ -43,11 +45,47 @@ public sealed class Scope
         return null;
     }
 
+    public bool TryDeclareFunction(FunctionSymbol function)
+    {
+        if (!CanDeclareSymbol(function.name))
+        {
+            return false;
+        }
+
+        functions.Add(function);
+        return true;
+    }
+
+    public FunctionSymbol TryLookupFunction(string name)
+    {
+        foreach (FunctionSymbol function in functions)
+        {
+            if (function.name == name)
+            {
+                return function;
+            }
+        }
+
+        if (parent != null)
+        {
+            return parent.TryLookupFunction(name);
+        }
+
+        return null;
+    }
+
     private bool CanDeclareSymbol(string name)
     {
         foreach (VariableSymbol variable in variables)
         {
             if (variable.name == name)
+            {
+                return false;
+            }
+        }
+        foreach (FunctionSymbol function in functions)
+        {
+            if (function.name == name)
             {
                 return false;
             }

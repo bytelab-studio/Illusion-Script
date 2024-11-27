@@ -39,10 +39,10 @@ public sealed class Binder
     private int localVariableCounter;
     private int loopCounter;
 
-    public Binder()
+    public Binder(Scope globalScope)
     {
         diagnostics = new DiagnosticBag();
-        scope = new Scope(null);
+        scope = new Scope(globalScope);
         localVariableCounter = 1;
         loopCounter = 0;
     }
@@ -52,7 +52,7 @@ public sealed class Binder
         return diagnostics.diagnostics;
     }
 
-    public BoundStatement BindStatement(Statement statement)
+    private BoundStatement BindStatement(Statement statement)
     {
         if (statement.type == NodeType.BLOCK_STATEMENT)
         {
@@ -648,13 +648,17 @@ public sealed class Binder
 
     private static BoundFunctionMember BindFunctionMember(BoundModule module, FunctionMember member)
     {
-        Binder binder = new Binder();
+        Binder binder = new Binder(module.scope);
 
         BoundBlockStatement body = binder.BindBlockStatement(member.body);
         TypeSymbol returnType = binder.BindTypeClause(member.returnClause);
+        FunctionSymbol symbol = new FunctionSymbol(member.identifierToken.text, returnType);
         module.diagnostics.diagnostics.AddRange(binder.diagnostics.diagnostics);
-
-        return new BoundFunctionMember(new FunctionSymbol(member.identifierToken.text, returnType), body);
+        if (!module.scope.TryDeclareFunction(symbol))
+        {
+            module.diagnostics.ReportSymbolAlreadyDefined(member.identifierToken.span, symbol.name);
+        }
+        return new BoundFunctionMember(symbol, body);
     }
 
     public static BoundModule BindMembers(List<Member> members)
