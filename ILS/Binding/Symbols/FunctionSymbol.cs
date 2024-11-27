@@ -12,4 +12,9 @@ public sealed class FunctionSymbol
         this.llvmName = "@" + name;
         this.returnType = returnType;
     }
+
+    public TypeSymbol AsTypeSymbol()
+    {
+        return TypeSymbol.Func(returnType);
+    }
 }

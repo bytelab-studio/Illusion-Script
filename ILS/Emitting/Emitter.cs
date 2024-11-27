@@ -242,6 +242,10 @@ public sealed partial class Emitter
         {
             return EmitVariableExpression((BoundVariableExpression)expression);
         }
+        if (expression.type == NodeType.FUNCTION_EXPRESSION)
+        {
+            return EmitFunctionExpression((BoundFunctionExpression)expression);
+        }
         if (expression.type == NodeType.VARIABLE_REFERENCE_EXPRESSION)
         {
             return EmitVariableReferenceExpression((BoundVariableReferenceExpression)expression);
@@ -552,6 +556,11 @@ public sealed partial class Emitter
         writer.WriteLine(expression.variable.type.align);
 
         return result;
+    }
+
+    private string EmitFunctionExpression(BoundFunctionExpression expression)
+    {
+        return expression.function.llvmName;
     }
 
     private string EmitVariableReferenceExpression(BoundVariableReferenceExpression expression)

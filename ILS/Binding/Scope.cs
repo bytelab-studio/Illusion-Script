@@ -74,6 +74,31 @@ public sealed class Scope
         return null;
     }
 
+    public object TryLookupSymbol(string name)
+    {
+        foreach (VariableSymbol variable in variables)
+        {
+            if (variable.name == name)
+            {
+                return variable;
+            }
+        }
+        foreach (FunctionSymbol function in functions)
+        {
+            if (function.name == name)
+            {
+                return function;
+            }
+        }
+
+        if (parent != null)
+        {
+            return parent.TryLookupSymbol(name);
+        }
+
+        return null;
+    }
+
     private bool CanDeclareSymbol(string name)
     {
         foreach (VariableSymbol variable in variables)

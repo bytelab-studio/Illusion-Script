@@ -518,14 +518,18 @@ public sealed class Binder
 
     private BoundExpression BindNameExpression(NameExpression expression)
     {
-        VariableSymbol variable = scope.TryLookupVariable(expression.value.text);
-        if (variable == null)
+        object symbol = scope.TryLookupSymbol(expression.value.text);
+        if (symbol is VariableSymbol variable)
         {
-            diagnostics.ReportUnresolvedSymbol(expression.value.span, expression.value.text);
-            return new BoundErrorExpression();
+            return new BoundVariableExpression(variable);
+        }
+        if (symbol is FunctionSymbol function)
+        {
+            return new BoundFunctionExpression(function);
         }
 
-        return new BoundVariableExpression(variable);
+        diagnostics.ReportUnresolvedSymbol(expression.value.span, expression.value.text);
+        return new BoundErrorExpression();
     }
 
     private BoundExpression BindConversionExpression(ConversionExpression expression)
@@ -638,6 +642,17 @@ public sealed class Binder
 
             TypeSymbol baseType = BindTypeClause(clause.generic);
             return TypeSymbol.Reference(baseType);
+        }
+        if (clause.identifierToken.text == TypeSymbol.FUNC_NAME)
+        {
+            if (clause.generic == null)
+            {
+                diagnostics.ReportExpectGeneric(clause.identifierToken.span, clause.identifierToken.text);
+                return TypeSymbol.error;
+            }
+
+            TypeSymbol returnType = BindTypeClause(clause.generic);
+            return TypeSymbol.Func(returnType);
         }
 
         diagnostics.ReportUnknownType(clause.span, clause.identifierToken.text);

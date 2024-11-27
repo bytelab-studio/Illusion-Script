@@ -9,7 +9,7 @@ public sealed class BoundVariableExpression : BoundExpression
     public override TypeSymbol returnType => variable.type;
 
     public readonly VariableSymbol variable;
-    
+
     public BoundVariableExpression(VariableSymbol variable)
     {
         this.variable = variable;

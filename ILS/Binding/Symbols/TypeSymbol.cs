@@ -9,6 +9,10 @@ public sealed class TypeSymbol
     public const int PTR_SIZE = 8;
     public const int PTR_ALIGN = 8;
 
+    public const string FUNC_NAME = "FUNC";
+    public const int FUNC_SIZE = 8;
+    public const int FUNC_ALIGN = 8;
+
     public readonly bool primitive;
     public readonly string fullName;
     public readonly string name;
@@ -66,6 +70,14 @@ public sealed class TypeSymbol
         }
 
         return ptrType.generics[0];
+    }
+
+    public static TypeSymbol Func(TypeSymbol returnType)
+    {
+        return new TypeSymbol(true, FUNC_NAME, "ptr", FUNC_SIZE, FUNC_ALIGN, new[]
+        {
+            returnType
+        }, TypeFlags.NONE);
     }
 }
 
