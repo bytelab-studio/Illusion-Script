@@ -105,11 +105,25 @@ public sealed class Parser
         Token functionKeyword = Match(NodeType.FUNCTION_KEYWORD);
         Token identifierToken = Match(NodeType.IDENTIFIER_TOKEN);
         Token lParenToken = Match(NodeType.LPAREN_TOKEN);
+
+        List<FunctionParameter> parameters = new List<FunctionParameter>();
+
+        while (Current().type != NodeType.RPAREN_TOKEN && Current().type != NodeType.EOF_TOKEN)
+        {
+            Token parameterIdentifierToken = Match(NodeType.IDENTIFIER_TOKEN);
+            TypeClause clause = ParseTypeClause();
+            parameters.Add(new FunctionParameter(parameterIdentifierToken, clause));
+            if (Current().type != NodeType.RPAREN_TOKEN)
+            {
+                Match(NodeType.COMMA_TOKEN);
+            }
+        }
+
         Token rParenToken = Match(NodeType.RPAREN_TOKEN);
         TypeClause returnClause = ParseTypeClause();
         BlockStatement body = ParseBlockStatement();
 
-        return new FunctionMember(functionKeyword, identifierToken, lParenToken, rParenToken, returnClause, body);
+        return new FunctionMember(functionKeyword, identifierToken, lParenToken, parameters, rParenToken, returnClause, body);
     }
 
     private Statement ParseStatement()
@@ -359,15 +373,22 @@ public sealed class Parser
     {
         Token identifierToken = Match(NodeType.IDENTIFIER_TOKEN);
         Token lAngleToken = null;
-        TypeClause generic = null;
         Token rAngleToken = null;
+        List<TypeClause> generics = new List<TypeClause>();
         if (Current().type == NodeType.LANGLE_TOKEN)
         {
             lAngleToken = NextToken();
-            generic = ParseTypeSignature();
+            do
+            {
+                generics.Add(ParseTypeSignature());
+                if (Current().type == NodeType.COMMA_TOKEN)
+                {
+                    Match(NodeType.COMMA_TOKEN);
+                }
+            } while (Current().type != NodeType.RANGLE_TOKEN && Current().type != NodeType.EOF_TOKEN);
             rAngleToken = Match(NodeType.RANGLE_TOKEN);
         }
-        return new TypeClause(identifierToken, lAngleToken, generic, rAngleToken);
+        return new TypeClause(identifierToken, lAngleToken, generics, rAngleToken);
     }
 
     private static int GetUnaryOperatorPrecedence(NodeType type)

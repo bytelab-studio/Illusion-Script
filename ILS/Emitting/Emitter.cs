@@ -39,17 +39,50 @@ public sealed partial class Emitter
     {
         foreach (BoundFunctionMember member in module.functions)
         {
-            EmitFunction(member);
+            EmitFunctionMember(member);
         }
     }
 
-    private void EmitFunction(BoundFunctionMember member)
+    private void EmitFunctionMember(BoundFunctionMember member)
     {
         writer.Write("define dso_local ");
         writer.Write(member.symbol.returnType.llvmName);
         writer.Write(" ");
         writer.Write(member.symbol.llvmName);
-        writer.WriteLine("() {");
+        writer.Write("(");
+        for (int i = 0; i < member.symbol.parameters.Length; i++)
+        {
+            if (i != 0)
+            {
+                writer.Write(", ");
+            }
+            VariableSymbol parameter = member.symbol.parameters[i];
+            writer.Write(parameter.type.llvmName);
+            writer.Write(" %");
+            writer.Write(parameter.name);
+        }
+        writer.WriteLine(") {");
+
+        foreach (VariableSymbol parameter in member.symbol.parameters)
+        {
+            writer.WriteIntend(parameter.llvmName);
+            writer.Write(" = alloca ");
+            writer.Write(parameter.type.llvmName);
+            writer.Write(", align ");
+            writer.WriteLine(parameter.type.align);
+        }
+        foreach (VariableSymbol parameter in member.symbol.parameters)
+        {
+            writer.WriteIntend("store ");
+            writer.Write(parameter.type.llvmName);
+            writer.Write(" %");
+            writer.Write(parameter.name);
+            writer.Write(", ptr ");
+            writer.Write(parameter.llvmName);
+            writer.Write(", align ");
+            writer.WriteLine(parameter.type.align);
+        }
+
         EmitStatement(member.body);
         writer.WriteLine("    ret void");
         writer.WriteLine("}");

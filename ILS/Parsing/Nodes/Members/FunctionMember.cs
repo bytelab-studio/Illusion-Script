@@ -12,15 +12,18 @@ public sealed class FunctionMember : Member
     public Token functionKeyword;
     public Token identifierToken;
     public Token lParenToken;
+    public List<FunctionParameter> parameters;
     public Token rParenToken;
     public TypeClause returnClause;
     public BlockStatement body;
 
-    public FunctionMember(Token functionKeyword, Token identifierToken, Token lParenToken, Token rParenToken, TypeClause returnClause, BlockStatement body)
+    public FunctionMember(Token functionKeyword, Token identifierToken, Token lParenToken, List<FunctionParameter> parameters, Token rParenToken,
+        TypeClause returnClause, BlockStatement body)
     {
         this.functionKeyword = functionKeyword;
         this.identifierToken = identifierToken;
         this.lParenToken = lParenToken;
+        this.parameters = parameters;
         this.rParenToken = rParenToken;
         this.returnClause = returnClause;
         this.body = body;

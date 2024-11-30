@@ -81,6 +81,11 @@ public sealed class Lexer
             position++;
             return new Token(NodeType.COLON_TOKEN, FinishTextSpan(span), ":");
         }
+        if (Current() == ',')
+        {
+            position++;
+            return new Token(NodeType.COMMA_TOKEN, FinishTextSpan(span), ",");
+        }
         if (Current() == '+')
         {
             if (Peek(1) == '+')
@@ -114,12 +119,12 @@ public sealed class Lexer
         if (Current() == '(')
         {
             position++;
-            return new Token(NodeType.LPAREN_TOKEN, FinishTextSpan(span), "/");
+            return new Token(NodeType.LPAREN_TOKEN, FinishTextSpan(span), "(");
         }
         if (Current() == ')')
         {
             position++;
-            return new Token(NodeType.RPAREN_TOKEN, FinishTextSpan(span), "/");
+            return new Token(NodeType.RPAREN_TOKEN, FinishTextSpan(span), ")");
         }
         if (Current() == '{')
         {

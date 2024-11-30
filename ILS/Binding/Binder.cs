@@ -105,7 +105,7 @@ public sealed class Binder
         VariableSymbol symbol = new VariableSymbol(
             statement.keywordToken.type == NodeType.CONST_KEYWORD,
             statement.identifierToken.text,
-            BindTypeClause(statement.typeClause),
+            BindTypeClause(statement.typeClause, false),
             localVariableCounter++
         );
         BoundExpression initializer = BindExpectedExpression(statement.initializer, symbol.type);
@@ -535,7 +535,7 @@ public sealed class Binder
     private BoundExpression BindConversionExpression(ConversionExpression expression)
     {
         BoundExpression boundExpression = BindExpression(expression.expression);
-        TypeSymbol targetType = BindTypeClause(expression.clause);
+        TypeSymbol targetType = BindTypeClause(expression.clause, false);
 
         return ClassifyConversion(expression.clause.span, boundExpression, targetType, true, false);
     }
@@ -543,7 +543,7 @@ public sealed class Binder
     private BoundExpression BindReinterpretationExpression(ReinterpretationExpression expression)
     {
         BoundExpression boundExpression = BindExpression(expression.expression);
-        TypeSymbol targetType = BindTypeClause(expression.clause);
+        TypeSymbol targetType = BindTypeClause(expression.clause, false);
 
         return ClassifyConversion(expression.clause.span, boundExpression, targetType, true, true);
     }
@@ -590,9 +590,9 @@ public sealed class Binder
         return new BoundTernaryExpression(condition, thenExpression, elseExpression);
     }
 
-    private TypeSymbol BindTypeClause(TypeClause clause)
+    private TypeSymbol BindTypeClause(TypeClause clause, bool allowVoid)
     {
-        if (clause.identifierToken.text == TypeSymbol.voidType.name)
+        if (allowVoid && clause.identifierToken.text == TypeSymbol.voidType.name)
         {
             return TypeSymbol.voidType;
         }
@@ -634,40 +634,66 @@ public sealed class Binder
         }
         if (clause.identifierToken.text == TypeSymbol.PTR_NAME)
         {
-            if (clause.generic == null)
+            if (clause.generics.Count != 1)
             {
-                diagnostics.ReportExpectGeneric(clause.identifierToken.span, clause.identifierToken.text);
+                diagnostics.ReportExpectGenericCount(clause.identifierToken.span, clause.identifierToken.text, 1, clause.generics.Count);
                 return TypeSymbol.error;
             }
 
-            TypeSymbol baseType = BindTypeClause(clause.generic);
+            TypeSymbol baseType = BindTypeClause(clause.generics[0], true);
             return TypeSymbol.Reference(baseType);
         }
         if (clause.identifierToken.text == TypeSymbol.FUNC_NAME)
         {
-            if (clause.generic == null)
+            if (clause.generics.Count == 0)
             {
                 diagnostics.ReportExpectGeneric(clause.identifierToken.span, clause.identifierToken.text);
                 return TypeSymbol.error;
             }
 
-            TypeSymbol returnType = BindTypeClause(clause.generic);
-            return TypeSymbol.Func(returnType);
+            List<TypeSymbol> generics = new List<TypeSymbol>();
+
+            for (int i = 0; i < clause.generics.Count; i++)
+            {
+                generics.Add(BindTypeClause(clause.generics[i], i == clause.generics.Count - 1));
+            }
+
+            return TypeSymbol.Func(generics.ToArray());
         }
 
         diagnostics.ReportUnknownType(clause.span, clause.identifierToken.text);
         return TypeSymbol.error;
     }
 
-    private static IEnumerable<Member> GetMembers<T>(IEnumerable<T> members, NodeType type) where T : Member => members.Where(member => member.type == type);
+    private static IEnumerable<T> GetMembers<T>(IEnumerable<Member> members, NodeType type) where T : Member =>
+        members.Where(member => member.type == type).Cast<T>();
 
     private static BoundFunctionMember BindFunctionMember(BoundModule module, FunctionMember member)
     {
         Binder binder = new Binder(module.scope);
 
         BoundBlockStatement body = binder.BindBlockStatement(member.body);
-        TypeSymbol returnType = binder.BindTypeClause(member.returnClause);
-        FunctionSymbol symbol = new FunctionSymbol(member.identifierToken.text, returnType);
+        TypeSymbol returnType = binder.BindTypeClause(member.returnClause, true);
+
+        List<VariableSymbol> parameters = new List<VariableSymbol>();
+        HashSet<string> seenNames = new HashSet<string>();
+
+        foreach (FunctionParameter parameter in member.parameters)
+        {
+            if (!seenNames.Add(parameter.identifierToken.text))
+            {
+                module.diagnostics.ReportAmbiguousParameterName(parameter.identifierToken.span, parameter.identifierToken.text);
+            }
+            TypeSymbol type = binder.BindTypeClause(parameter.clause, false);
+            VariableSymbol variableSymbol = new VariableSymbol(false, parameter.identifierToken.text, type, binder.localVariableCounter++);
+            parameters.Add(variableSymbol);
+            if (!module.scope.TryDeclareVariable(variableSymbol))
+            {
+                module.diagnostics.ReportSymbolAlreadyDefined(parameter.identifierToken.span, variableSymbol.name);
+            }
+        }
+        FunctionSymbol symbol = new FunctionSymbol(member.identifierToken.text, parameters.ToArray(), returnType);
+
         module.diagnostics.diagnostics.AddRange(binder.diagnostics.diagnostics);
         if (!module.scope.TryDeclareFunction(symbol))
         {
@@ -679,7 +705,7 @@ public sealed class Binder
     public static BoundModule BindMembers(List<Member> members)
     {
         BoundModule module = new BoundModule();
-        foreach (FunctionMember member in GetMembers(members, NodeType.FUNCTION_MEMBER))
+        foreach (FunctionMember member in GetMembers<FunctionMember>(members, NodeType.FUNCTION_MEMBER))
         {
             module.functions.Add(BindFunctionMember(module, member));
         }

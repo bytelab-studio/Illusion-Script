@@ -132,6 +132,11 @@ public sealed class DiagnosticBag
         Report(span, "ERROR: Type '" + name + "' expected a generic");
     }
 
+    public void ReportExpectGenericCount(TextSpan span, string name, int expected, int got)
+    {
+        Report(span, "ERROR: Type '" + name + "' expected '" + expected + "' generics got '" + got + "'");
+    }
+
     public void ReportDeReferenceRequiresPtr(TextSpan span)
     {
         Report(span, "ERROR: Dereference requires pointer operand");
@@ -140,5 +145,10 @@ public sealed class DiagnosticBag
     public void ReportNotInLoop(TextSpan span, NodeType type)
     {
         Report(span, $"ERROR: '{type}' can only be used inside a loop");
+    }
+
+    public void ReportAmbiguousParameterName(TextSpan span, string name)
+    {
+        Report(span, "ERROR: A parameter with the name '"+name+"' is already declared");
     }
 }

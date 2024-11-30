@@ -72,12 +72,9 @@ public sealed class TypeSymbol
         return ptrType.generics[0];
     }
 
-    public static TypeSymbol Func(TypeSymbol returnType)
+    public static TypeSymbol Func(TypeSymbol[] generics)
     {
-        return new TypeSymbol(true, FUNC_NAME, "ptr", FUNC_SIZE, FUNC_ALIGN, new[]
-        {
-            returnType
-        }, TypeFlags.NONE);
+        return new TypeSymbol(true, FUNC_NAME, "ptr", FUNC_SIZE, FUNC_ALIGN, generics, TypeFlags.NONE);
     }
 }
 

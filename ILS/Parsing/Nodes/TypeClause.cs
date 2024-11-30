@@ -10,13 +10,13 @@ public sealed class TypeClause : Node
 
     public Token identifierToken;
     public Token lAngleToken;
-    public TypeClause generic;
+    public List<TypeClause> generics;
     public Token rAngleToken;
-    public TypeClause(Token identifierToken, Token lAngleToken, TypeClause generic, Token rAngleToken)
+    public TypeClause(Token identifierToken, Token lAngleToken, List<TypeClause> generics, Token rAngleToken)
     {
         this.identifierToken = identifierToken;
         this.lAngleToken = lAngleToken;
-        this.generic = generic;
+        this.generics = generics;
         this.rAngleToken = rAngleToken;
     }
 

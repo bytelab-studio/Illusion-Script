@@ -28,6 +28,7 @@ public enum NodeType
     QUESTION_TOKEN,
     SEMI_TOKEN,
     COLON_TOKEN,
+    COMMA_TOKEN,
 
     IDENTIFIER_TOKEN,
     TRUE_KEYWORD,
@@ -43,6 +44,7 @@ public enum NodeType
     FUNCTION_KEYWORD,
 
     TYPE_CLAUSE,
+    PARAMETER,
 
     ERROR_EXPRESSION,
     INT_EXPRESSION,
