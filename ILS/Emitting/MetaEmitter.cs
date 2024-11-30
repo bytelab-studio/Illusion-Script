@@ -9,16 +9,14 @@ public sealed partial class Emitter
 {
     public string EmitMetaExpression(BoundExpression expression)
     {
-        if (expression.type == NodeType.VARIABLE_EXPRESSION)
-        {
-            return EmitMetaVariableExpression((BoundVariableExpression)expression);
-        }
-        if (expression.type == NodeType.DEREFERENCE_EXPRESSION)
-        {
-            return EmitMetaDeReferenceExpression((BoundDeReferenceExpression)expression);
-        }
-
-        throw new Exception("Unknown meta expression");
+	 	switch(expression.type) {
+			case NodeType.VARIABLE_EXPRESSION:
+				return EmitMetaVariableExpression((BoundVariableExpression)expression);
+			case NodeType.DEREFERENCE_EXPRESSION:
+				return EmitMetaDeReferenceExpression((BoundDeReferenceExpression)expression);
+			default:
+				throw new Exception("Unknown meta expression");
+		}
     }
 
     private string EmitMetaVariableExpression(BoundVariableExpression expression)
