@@ -54,25 +54,26 @@ public sealed class Binder
 
     private BoundStatement BindStatement(Statement statement)
     {
-		switch(statement.type) {
-			case NodeType.BLOCK_STATEMENT:
-				return BindBlockStatement((BlockStatement)statement);
-			case NodeType.VARIABLE_STATEMENT:
-				return BindVariableStatement((VariableStatement)statement);
-			case NodeType.EXPRESSION_STATEMENT:
-				return BindExpressionStatement((ExpressionStatement)statement);
-			case NodeType.IF_STATEMENT:
-				return BindIfStatement((IfStatement)statement);
-			case NodeType.WHILE_STATEMENT:
-				return BindWhileStatement((WhileStatement)statement);
-			case NodeType.BREAK_STATEMENT:
-				return BindBreakStatement((BreakStatement)statement);
-			case NodeType.CONTINUE_STATEMENT:
-				return BindContinueStatement((ContinueStatement)statement);
-			default:
-        		throw new Exception("Unexpected statement");
-    	}
-	}
+        switch (statement.type)
+        {
+            case NodeType.BLOCK_STATEMENT:
+                return BindBlockStatement((BlockStatement)statement);
+            case NodeType.VARIABLE_STATEMENT:
+                return BindVariableStatement((VariableStatement)statement);
+            case NodeType.EXPRESSION_STATEMENT:
+                return BindExpressionStatement((ExpressionStatement)statement);
+            case NodeType.IF_STATEMENT:
+                return BindIfStatement((IfStatement)statement);
+            case NodeType.WHILE_STATEMENT:
+                return BindWhileStatement((WhileStatement)statement);
+            case NodeType.BREAK_STATEMENT:
+                return BindBreakStatement((BreakStatement)statement);
+            case NodeType.CONTINUE_STATEMENT:
+                return BindContinueStatement((ContinueStatement)statement);
+            default:
+                throw new Exception("Unexpected statement");
+        }
+    }
 
     private BoundBlockStatement BindBlockStatement(BlockStatement statement)
     {
@@ -108,7 +109,8 @@ public sealed class Binder
     private BoundStatement BindExpressionStatement(ExpressionStatement statement)
     {
         BoundExpression expression = BindExpression(statement.expression);
-        if (expression.type != NodeType.ASSIGNMENT_EXPRESSION)
+        if (expression.type != NodeType.ASSIGNMENT_EXPRESSION &&
+            expression.type != NodeType.CALL_EXPRESSION)
         {
             diagnostics.ReportExpressionNotAllowed(statement.expression.span, statement.expression.type);
             expression = new BoundErrorExpression();
@@ -313,34 +315,37 @@ public sealed class Binder
 
     private BoundExpression BindExpression(Expression expression)
     {
-		switch(expression.type) {
-			case NodeType.INT_EXPRESSION:
-				return BindIntExpression((IntExpression)expression);
-			case NodeType.BOOL_EXPRESSION:
-				return BindBoolExpression((BoolExpression)expression);
-			case NodeType.UNARY_EXPRESSION:
-				return BindUnaryExpression((UnaryExpression)expression);
-			case NodeType.BINARY_EXPRESSION:
-				return BindBinaryExpression((BinaryExpression)expression);
-			case NodeType.PAREN_EXPRESSION:
-				return BindExpression(((ParenExpression)expression).expression);
-			case NodeType.ASSIGNMENT_EXPRESSION:
-				return BindAssignmentExpression((AssignmentExpression)expression);
-			case NodeType.NAME_EXPRESSION:
-				return BindNameExpression((NameExpression)expression);
-			case NodeType.CONVERSION_EXPRESSION:
-				return BindConversionExpression((ConversionExpression)expression);
-			case NodeType.REINTERPRETATION_EXPRESSION:
-				return BindReinterpretationExpression((ReinterpretationExpression)expression);
-			case NodeType.INCREMENT_EXPRESSION:
-				return BindIncrementExpression((IncrementExpression)expression);
-			case NodeType.DECREMENT_EXPRESSION:
-				return BindDecrementExpression((DecrementExpression)expression);
-			case NodeType.TERNARY_EXPRESSION:
-				return BindTernaryExpression((TernaryExpression)expression);
-			default:
-				throw new Exception("Unexptected expression");
-		}
+        switch (expression.type)
+        {
+            case NodeType.INT_EXPRESSION:
+                return BindIntExpression((IntExpression)expression);
+            case NodeType.BOOL_EXPRESSION:
+                return BindBoolExpression((BoolExpression)expression);
+            case NodeType.UNARY_EXPRESSION:
+                return BindUnaryExpression((UnaryExpression)expression);
+            case NodeType.BINARY_EXPRESSION:
+                return BindBinaryExpression((BinaryExpression)expression);
+            case NodeType.PAREN_EXPRESSION:
+                return BindExpression(((ParenExpression)expression).expression);
+            case NodeType.ASSIGNMENT_EXPRESSION:
+                return BindAssignmentExpression((AssignmentExpression)expression);
+            case NodeType.NAME_EXPRESSION:
+                return BindNameExpression((NameExpression)expression);
+            case NodeType.CONVERSION_EXPRESSION:
+                return BindConversionExpression((ConversionExpression)expression);
+            case NodeType.REINTERPRETATION_EXPRESSION:
+                return BindReinterpretationExpression((ReinterpretationExpression)expression);
+            case NodeType.INCREMENT_EXPRESSION:
+                return BindIncrementExpression((IncrementExpression)expression);
+            case NodeType.DECREMENT_EXPRESSION:
+                return BindDecrementExpression((DecrementExpression)expression);
+            case NodeType.TERNARY_EXPRESSION:
+                return BindTernaryExpression((TernaryExpression)expression);
+            case NodeType.CALL_EXPRESSION:
+                return BindCallExpression((CallExpression)expression);
+            default:
+                throw new Exception("Unexptected expression");
+        }
     }
 
     private BoundExpression BindIntExpression(IntExpression expression)
@@ -554,6 +559,30 @@ public sealed class Binder
         BoundExpression thenExpression = BindExpression(expression.thenExpression);
         BoundExpression elseExpression = BindExpectedExpression(expression.elseExpression, thenExpression.returnType);
         return new BoundTernaryExpression(condition, thenExpression, elseExpression);
+    }
+
+    private BoundExpression BindCallExpression(CallExpression expression)
+    {
+        BoundExpression callee = BindExpression(expression.callee);
+        if (callee.returnType.name != TypeSymbol.FUNC_NAME)
+        {
+            diagnostics.ReportExpressionNotCallable(expression.callee.span);
+            return new BoundErrorExpression();
+        }
+        TypeSymbol functionType = callee.returnType;
+        if (expression.arguments.Count != functionType.generics.Length - 1)
+        {
+            diagnostics.ReportUnexpectedArgumentCount(expression.callee.span, functionType.generics.Length - 1, expression.arguments.Count);
+            return new BoundErrorExpression();
+        }
+        List<BoundExpression> arguments = new List<BoundExpression>();
+        for (int i = 0; i < expression.arguments.Count; i++)
+        {
+            Expression argument = expression.arguments[i];
+            arguments.Add(BindExpectedExpression(argument, functionType.generics[i]));
+        }
+
+        return new BoundCallExpression(callee, arguments.ToArray());
     }
 
     private TypeSymbol BindTypeClause(TypeClause clause, bool allowVoid)

@@ -89,29 +89,30 @@ public sealed partial class Emitter
 
     private void EmitStatement(BoundStatement statement)
     {
-		switch(statement.type) {
-			case NodeType.BLOCK_STATEMENT:
-				EmitBlockStatement((BoundBlockStatement)statement);
-				break;
-			case NodeType.VARIABLE_STATEMENT:
-				EmitVariableStatement((BoundVariableStatement)statement);
-				break;
-			case NodeType.IF_STATEMENT:
-				EmitIfStatement((BoundIfStatement)statement);
-				break;
-			case NodeType.WHILE_STATEMENT:
-				EmitWhileStatement((BoundWhileStatement)statement);
-				break;
-			case NodeType.BREAK_STATEMENT:
-				EmitBreakStatement((BoundBreakStatement)statement);
-				break;
-			case NodeType.CONTINUE_STATEMENT:
-				EmitContinueStatement((BoundContinueStatement)statement);
-				break;
-	    	case NodeType.EXPRESSION_STATEMENT:
-				EmitExpressionStatement((BoundExpressionStatement)statement);
-				break;
-    	}
+        switch (statement.type)
+        {
+            case NodeType.BLOCK_STATEMENT:
+                EmitBlockStatement((BoundBlockStatement)statement);
+                break;
+            case NodeType.VARIABLE_STATEMENT:
+                EmitVariableStatement((BoundVariableStatement)statement);
+                break;
+            case NodeType.IF_STATEMENT:
+                EmitIfStatement((BoundIfStatement)statement);
+                break;
+            case NodeType.WHILE_STATEMENT:
+                EmitWhileStatement((BoundWhileStatement)statement);
+                break;
+            case NodeType.BREAK_STATEMENT:
+                EmitBreakStatement((BoundBreakStatement)statement);
+                break;
+            case NodeType.CONTINUE_STATEMENT:
+                EmitContinueStatement((BoundContinueStatement)statement);
+                break;
+            case NodeType.EXPRESSION_STATEMENT:
+                EmitExpressionStatement((BoundExpressionStatement)statement);
+                break;
+        }
     }
 
     private void EmitBlockStatement(BoundBlockStatement statement)
@@ -240,34 +241,37 @@ public sealed partial class Emitter
 
     private string EmitExpression(BoundExpression expression)
     {
-		switch(expression.type) {
-			case NodeType.INT_EXPRESSION:
-				return EmitIntExpression((BoundIntExpression)expression);
-			case NodeType.BOOL_EXPRESSION:
-				return EmitBoolExpression((BoundBoolExpression)expression);
-			case NodeType.UNARY_EXPRESSION:
-				return EmitUnaryExpression((BoundUnaryExpression)expression);
-			case NodeType.BINARY_EXPRESSION:
-				return EmitBinaryExpression((BoundBinaryExpression)expression);
-			case NodeType.ASSIGNMENT_EXPRESSION:
-				return EmitAssignmentExpression((BoundAssignmentExpression)expression);
-			case NodeType.VARIABLE_EXPRESSION:
-				return EmitVariableExpression((BoundVariableExpression)expression);
+        switch (expression.type)
+        {
+            case NodeType.INT_EXPRESSION:
+                return EmitIntExpression((BoundIntExpression)expression);
+            case NodeType.BOOL_EXPRESSION:
+                return EmitBoolExpression((BoundBoolExpression)expression);
+            case NodeType.UNARY_EXPRESSION:
+                return EmitUnaryExpression((BoundUnaryExpression)expression);
+            case NodeType.BINARY_EXPRESSION:
+                return EmitBinaryExpression((BoundBinaryExpression)expression);
+            case NodeType.ASSIGNMENT_EXPRESSION:
+                return EmitAssignmentExpression((BoundAssignmentExpression)expression);
+            case NodeType.VARIABLE_EXPRESSION:
+                return EmitVariableExpression((BoundVariableExpression)expression);
             case NodeType.FUNCTION_EXPRESSION:
                 return EmitFunctionExpression((BoundFunctionExpression)expression);
             case NodeType.VARIABLE_REFERENCE_EXPRESSION:
-				return EmitVariableReferenceExpression((BoundVariableReferenceExpression)expression);
-			case NodeType.CONVERSION_EXPRESSION:
-				return EmitConversionExpression((BoundConversionExpression)expression);
-			case NodeType.REINTERPRETATION_EXPRESSION:
-				return EmitReinterpretationExpression((BoundReinterpretationExpression)expression);
-			case NodeType.DEREFERENCE_EXPRESSION:
-				return EmitDeReferenceExpression((BoundDeReferenceExpression)expression);
-			case NodeType.TERNARY_EXPRESSION:
-				return EmitTernaryExpression((BoundTernaryExpression)expression);
-			default:
-				throw new Exception("Unknown expression");
-		}
+                return EmitVariableReferenceExpression((BoundVariableReferenceExpression)expression);
+            case NodeType.CONVERSION_EXPRESSION:
+                return EmitConversionExpression((BoundConversionExpression)expression);
+            case NodeType.REINTERPRETATION_EXPRESSION:
+                return EmitReinterpretationExpression((BoundReinterpretationExpression)expression);
+            case NodeType.DEREFERENCE_EXPRESSION:
+                return EmitDeReferenceExpression((BoundDeReferenceExpression)expression);
+            case NodeType.TERNARY_EXPRESSION:
+                return EmitTernaryExpression((BoundTernaryExpression)expression);
+            case NodeType.CALL_EXPRESSION:
+                return EmitCallExpression((BoundCallExpression)expression);
+            default:
+                throw new Exception("Unknown expression");
+        }
     }
 
     private string EmitIntExpression(BoundIntExpression expression)
@@ -719,6 +723,49 @@ public sealed partial class Emitter
         writer.Write(", %");
         writer.Write(falseLabel);
         writer.WriteLine(" ]");
+
+        return result;
+    }
+
+    private string EmitCallExpression(BoundCallExpression expression)
+    {
+        string callee = EmitExpression(expression.callee);
+        string[] arguments = new string[expression.arguments.Length];
+        for (int i = 0; i < expression.arguments.Length; i++)
+        {
+            arguments[i] = EmitExpression(expression.arguments[i]);
+        }
+
+        string result = "";
+
+        if (expression.returnType != TypeSymbol.voidType)
+        {
+            result = NextLabel();
+            writer.WriteIntend(result);
+            writer.Write(" = ");
+        }
+        else
+        {
+            writer.WriteIntend();
+        }
+
+        writer.Write("call ");
+        writer.Write(expression.returnType.llvmName);
+        writer.Write(" ");
+        writer.Write(callee);
+        writer.Write("(");
+        for (int i = 0; i < arguments.Length; i++)
+        {
+            if (i != 0)
+            {
+                writer.Write(", ");
+            }
+            string argument = arguments[i];
+            writer.Write(expression.arguments[i].returnType.llvmName);
+            writer.Write(" ");
+            writer.Write(argument);
+        }
+        writer.WriteLine(")");
 
         return result;
     }

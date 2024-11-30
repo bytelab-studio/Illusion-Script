@@ -149,6 +149,16 @@ public sealed class DiagnosticBag
 
     public void ReportAmbiguousParameterName(TextSpan span, string name)
     {
-        Report(span, "ERROR: A parameter with the name '"+name+"' is already declared");
+        Report(span, "ERROR: A parameter with the name '" + name + "' is already declared");
+    }
+
+    public void ReportExpressionNotCallable(TextSpan span)
+    {
+        Report(span, "ERROR: The expression is not callable");
+    }
+
+    public void ReportUnexpectedArgumentCount(TextSpan span, int expected, int got)
+    {
+        Report(span, "ERROR: Function expected '" + expected + "' arguments, but '" + got + "' was provided");
     }
 }

@@ -276,7 +276,7 @@ public sealed class Parser
 
     private Expression ParsePostOperationExpression()
     {
-        Expression left = ParseBinaryExpression(0);
+        Expression left = ParseAccessExpression();
         if (Current().type == NodeType.AS_KEYWORD)
         {
             Token asKeyword = NextToken();
@@ -300,6 +300,34 @@ public sealed class Parser
             Token colonToken = Match(NodeType.COLON_TOKEN);
             Expression elseExpression = ParseExpression();
             return new TernaryExpression(left, questionToken, thenExpression, colonToken, elseExpression);
+        }
+        return left;
+    }
+
+    private Expression ParseAccessExpression()
+    {
+        Expression left = ParseBinaryExpression(0);
+
+        while (true)
+        {
+            if (Current().type == NodeType.LPAREN_TOKEN)
+            {
+                Token lparenToken = Match(NodeType.LPAREN_TOKEN);
+                List<Expression> arguments = new List<Expression>();
+                while (Current().type != NodeType.RPAREN_TOKEN && Current().type != NodeType.EOF_TOKEN)
+                {
+                    arguments.Add(ParseExpression());
+                    if (Current().type == NodeType.COMMA_TOKEN)
+                    {
+                        Match(NodeType.COMMA_TOKEN);
+                    }
+                }
+                Token rparenToken = Match(NodeType.RPAREN_TOKEN);
+                left = new CallExpression(left, lparenToken, arguments, rparenToken);
+                continue;
+            }
+
+            break;
         }
 
         return left;
