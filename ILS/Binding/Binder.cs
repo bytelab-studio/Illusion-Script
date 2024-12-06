@@ -640,9 +640,9 @@ public sealed class Binder
         Binder binder = new Binder(module.scope);
 
         BoundBlockStatement body = binder.BindBlockStatement(member.body);
-		BasicBlockBuilder builder = new BasicBlockBuilder();
-		BasicBlock start = builder.Build(body);
-        Console.WriteLine(start.ToString());
+		if (!CFAScanner.AllPathsReturn(body)) {
+			module.diagnostics.ReportNotAllPathsReturn(member.identifierToken.span, member.identifierToken.text);
+		}
 		TypeSymbol returnType = binder.BindTypeClause(member.returnClause, true);
 
         List<VariableSymbol> parameters = new List<VariableSymbol>();

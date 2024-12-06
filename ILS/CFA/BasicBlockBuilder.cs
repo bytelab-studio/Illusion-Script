@@ -8,11 +8,11 @@ namespace ILS.CFA;
 public class BasicBlockBuilder {
 	private BasicBlock currentBlock;
 
-	public BasicBlock Build(BoundBlockStatement statement) {
+	public CFAGraph Build(BoundBlockStatement statement) {
 		BasicBlock start = new BasicBlock(true);
 		currentBlock = start;
 		WalkStatement(statement);
-		return start;
+		return new CFAGraph(start, currentBlock);
 	}
 
 	private void WalkStatement(BoundStatement statement) {

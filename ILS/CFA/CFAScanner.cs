@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ILS.Lexing;
 using ILS.Binding;
 using ILS.Binding.Statements;
@@ -6,34 +7,19 @@ using ILS.Binding.Statements;
 namespace ILS.CFA;
 
 public class CFAScanner {
-	public CFAScanner() {
+	private CFAScanner() {
 
 	}
 
-	public bool AllPathsReturn(BoundBlockStatement statement) {
-		foreach(BoundStatement sth in statement.statements) {
-			WalkStatement(sth);
+	public static bool AllPathsReturn(BoundBlockStatement statement) {
+		BasicBlockBuilder builder = new BasicBlockBuilder();
+		CFAGraph graph = builder.Build(statement);		
+		BasicBlock end = graph.end;
+		BoundStatement lastStatement = end.statements.LastOrDefault();
+		if (lastStatement == null || lastStatement.type != NodeType.RETURN_STATEMENT) {
+			return false;
 		}
-		return false;
-	} 
 
-	public void WalkStatement(BoundStatement statement) {	
-//		Console.WriteLine(statement.type);
-		switch(statement.type) {
-			case NodeType.BLOCK_STATEMENT: {	
-				foreach(BoundStatement sth in ((BoundBlockStatement) statement).statements) {
-					WalkStatement(sth);
-				}
-				break;
-			}
-			case NodeType.IF_STATEMENT: {
-				BoundIfStatement sth = (BoundIfStatement)statement;
-				WalkStatement(sth.thenBlock);
-				if (sth.elseBlock != null) {
-					WalkStatement(sth.elseBlock);
-				}
-				break;
-			}
-		}
+		return true;
 	}
 }
