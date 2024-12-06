@@ -151,4 +151,14 @@ public sealed class DiagnosticBag
     {
         Report(span, "ERROR: A parameter with the name '"+name+"' is already declared");
     }
+
+	public void ReportReturnRequiresValue(TextSpan span) 
+	{
+		Report(span, "ERROR: Return requires a return value");
+	}
+	
+	public void ReportReturnRequiresNoValue(TextSpan span) 
+	{
+		Report(span, "ERROR: Return cannot hold a value");
+	}
 }

@@ -218,7 +218,9 @@ public sealed class Lexer
 			case "continue":
 				return NodeType.CONTINUE_KEYWORD;
             case "function":
-                return NodeType.FUNCTION_KEYWORD
+                return NodeType.FUNCTION_KEYWORD;
+			case "return":
+				return NodeType.RETURN_KEYWORD;
 
 			default:
 				return NodeType.IDENTIFIER_TOKEN;

@@ -108,6 +108,9 @@ public sealed partial class Emitter
 			case NodeType.CONTINUE_STATEMENT:
 				EmitContinueStatement((BoundContinueStatement)statement);
 				break;
+			case NodeType.RETURN_STATEMENT:
+				EmitReturnStatement((BoundReturnStatement)statement);
+				break;
 	    	case NodeType.EXPRESSION_STATEMENT:
 				EmitExpressionStatement((BoundExpressionStatement)statement);
 				break;
@@ -233,6 +236,22 @@ public sealed partial class Emitter
         writer.WriteLine(currentContinueLabel);
     }
 
+	private void EmitReturnStatement(BoundReturnStatement statement) {
+		if (statement.value == null) {
+			writer.WriteIntend("ret void");
+			writer.WriteLine();
+			return;
+		}		
+
+		string label = EmitExpression(statement.value);
+
+		writer.WriteIntend("ret ");
+		writer.Write(statement.value.returnType.llvmName);
+		writer.Write(" ");
+		writer.WriteLine(label);
+		
+	}
+	
     private void EmitExpressionStatement(BoundExpressionStatement statement)
     {
         EmitExpression(statement.expression);

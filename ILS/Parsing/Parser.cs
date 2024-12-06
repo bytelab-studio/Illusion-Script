@@ -4,7 +4,6 @@ using ILS.Parsing.Nodes;
 using ILS.Parsing.Nodes.Expressions;
 using ILS.Parsing.Nodes.Members;
 using ILS.Parsing.Nodes.Statements;
-using Expression = ILS.Parsing.Nodes.Expression;
 
 namespace ILS.Parsing;
 
@@ -247,6 +246,16 @@ public sealed class Parser
 
         return new ContinueStatement(breakKeyword, semicolonToken);
     }
+
+	private ReturnStatement ParseReturnStatement() {
+		Token returnToken = Match(NodeType.RETURN_KEYWORD);
+		Expression value = null;
+		if (Current().type != NodeType.SEMI_TOKEN) {
+			value = ParseExpression();
+		}
+		Token semicolonToken = Match(NodeType.SEMI_TOKEN);
+		return new ReturnStatement(returnToken, value, semicolonToken);
+	}
 
     private ExpressionStatement ParseExpressionStatement()
     {
