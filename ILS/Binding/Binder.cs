@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ILS.CFA;
 using ILS.Binding.Expressions;
 using ILS.Binding.Members;
 using ILS.Binding.Operation;
@@ -687,6 +688,9 @@ public sealed class Binder
 
 		binder = new Binder(module.scope, returnType);
         BoundBlockStatement body = binder.BindBlockStatement(member.body);
+        if (!CFAScanner.AllPathsReturn(body)) {
+            module.diagnostics.ReportNotAllPathsReturn(member.identifierToken.span, member.identifierToken.text);
+        }
 
         List<VariableSymbol> parameters = new List<VariableSymbol>();
         HashSet<string> seenNames = new HashSet<string>();

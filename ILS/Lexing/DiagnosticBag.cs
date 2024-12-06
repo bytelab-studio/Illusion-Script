@@ -152,6 +152,10 @@ public sealed class DiagnosticBag
         Report(span, "ERROR: A parameter with the name '" + name + "' is already declared");
     }
 
+	public void ReportNotAllPathsReturn(TextSpan span, string name) {
+		Report(span, "ERROR: Not all paths return a value '"+name+"'");
+	}
+
     public void ReportExpressionNotCallable(TextSpan span)
     {
         Report(span, "ERROR: The expression is not callable");
@@ -162,12 +166,12 @@ public sealed class DiagnosticBag
         Report(span, "ERROR: Function expected '" + expected + "' arguments, but '" + got + "' was provided");
     }
 
-	public void ReportReturnRequiresValue(TextSpan span) 
+	public void ReportReturnRequiresValue(TextSpan span)
 	{
 		Report(span, "ERROR: Return requires a return value");
 	}
-	
-	public void ReportReturnRequiresNoValue(TextSpan span) 
+
+	public void ReportReturnRequiresNoValue(TextSpan span)
 	{
 		Report(span, "ERROR: Return cannot hold a value");
 	}
