@@ -688,7 +688,7 @@ public sealed class Binder
 
 		binder = new Binder(module.scope, returnType);
         BoundBlockStatement body = binder.BindBlockStatement(member.body);
-        if (!CFAScanner.AllPathsReturn(body)) {
+        if (returnType != TypeSymbol.voidType && !CFAScanner.AllPathsReturn(body)) {
             module.diagnostics.ReportNotAllPathsReturn(member.identifierToken.span, member.identifierToken.text);
         }
 

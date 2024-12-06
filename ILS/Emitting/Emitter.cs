@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using ILS.Binding;
 using ILS.Binding.Expressions;
 using ILS.Binding.Members;
@@ -83,7 +84,11 @@ public sealed partial class Emitter
         }
 
         EmitStatement(member.body);
-        writer.WriteLine("    ret void");
+        BoundStatement lastStatement = member.body.statements.LastOrDefault();
+        if (member.symbol.returnType == TypeSymbol.voidType && (lastStatement == null || lastStatement.type != NodeType.RETURN_STATEMENT))
+        {
+            writer.WriteLine("    ret void");
+        }
         writer.WriteLine("}");
     }
 
@@ -110,9 +115,9 @@ public sealed partial class Emitter
                 EmitContinueStatement((BoundContinueStatement)statement);
                 break;
             case NodeType.RETURN_STATEMENT:
-				EmitReturnStatement((BoundReturnStatement)statement);
-				break;
-	    	case NodeType.EXPRESSION_STATEMENT:
+                EmitReturnStatement((BoundReturnStatement)statement);
+                break;
+            case NodeType.EXPRESSION_STATEMENT:
                 EmitExpressionStatement((BoundExpressionStatement)statement);
                 break;
         }
@@ -237,21 +242,22 @@ public sealed partial class Emitter
         writer.WriteLine(currentContinueLabel);
     }
 
-	private void EmitReturnStatement(BoundReturnStatement statement) {
-		if (statement.value == null) {
-			writer.WriteIntend("ret void");
-			writer.WriteLine();
-			return;
-		}
+    private void EmitReturnStatement(BoundReturnStatement statement)
+    {
+        if (statement.value == null)
+        {
+            writer.WriteIntend("ret void");
+            writer.WriteLine();
+            return;
+        }
 
-		string label = EmitExpression(statement.value);
+        string label = EmitExpression(statement.value);
 
-		writer.WriteIntend("ret ");
-		writer.Write(statement.value.returnType.llvmName);
-		writer.Write(" ");
-		writer.WriteLine(label);
-
-	}
+        writer.WriteIntend("ret ");
+        writer.Write(statement.value.returnType.llvmName);
+        writer.Write(" ");
+        writer.WriteLine(label);
+    }
 
     private void EmitExpressionStatement(BoundExpressionStatement statement)
     {

@@ -161,6 +161,10 @@ public sealed class Parser
         {
             return ParseContinueStatement();
         }
+        if (Current().type == NodeType.RETURN_KEYWORD)
+        {
+            return ParseReturnStatement();
+        }
 
         return ParseExpressionStatement();
     }
