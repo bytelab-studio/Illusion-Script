@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ILS.CFA;
 using ILS.Binding.Expressions;
 using ILS.Binding.Members;
 using ILS.Binding.Operation;
@@ -639,7 +640,10 @@ public sealed class Binder
         Binder binder = new Binder(module.scope);
 
         BoundBlockStatement body = binder.BindBlockStatement(member.body);
-        TypeSymbol returnType = binder.BindTypeClause(member.returnClause, true);
+		BasicBlockBuilder builder = new BasicBlockBuilder();
+		BasicBlock start = builder.Build(body);
+        Console.WriteLine(start.ToString());
+		TypeSymbol returnType = binder.BindTypeClause(member.returnClause, true);
 
         List<VariableSymbol> parameters = new List<VariableSymbol>();
         HashSet<string> seenNames = new HashSet<string>();
