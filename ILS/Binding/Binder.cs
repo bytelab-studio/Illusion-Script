@@ -38,11 +38,13 @@ public sealed class Binder
     private Scope scope;
     private int localVariableCounter;
     private int loopCounter;
+	private TypeSymbol returnType;
 
-    public Binder(Scope globalScope)
+    public Binder(Scope globalScope, TypeSymbol returnType = null)
     {
         diagnostics = new DiagnosticBag();
         scope = new Scope(globalScope);
+		this.returnType = returnType;
         localVariableCounter = 1;
         loopCounter = 0;
     }
@@ -70,7 +72,8 @@ public sealed class Binder
                 return BindBreakStatement((BreakStatement)statement);
             case NodeType.CONTINUE_STATEMENT:
                 return BindContinueStatement((ContinueStatement)statement);
-            default:
+            case NodeType.RETURN_STATEMENT:
+				return BindReturnStatement((ReturnStatement)statement);default:
                 throw new Exception("Unexpected statement");
         }
     }
@@ -158,6 +161,20 @@ public sealed class Binder
 
         return new BoundContinueStatement();
     }
+
+	private BoundStatement BindReturnStatement(ReturnStatement statement) {
+		if (statement.value == null && returnType != TypeSymbol.voidType) {
+			diagnostics.ReportReturnRequiresValue(statement.returnToken.span);
+			return new BoundReturnStatement(null);
+		}
+		if (statement.value != null && returnType == TypeSymbol.voidType) {
+			diagnostics.ReportReturnRequiresNoValue(statement.returnToken.span);
+			return new BoundReturnStatement(null);
+		}
+
+		BoundExpression value = BindExpectedExpression(statement.value, returnType);
+		return new BoundReturnStatement(value);
+	}
 
     private ConversionResult ClassifyConversion(BoundExpression expression, TypeSymbol toType, bool isExplicit, bool allowReinterpretation)
     {
@@ -666,9 +683,10 @@ public sealed class Binder
     private static BoundFunctionMember BindFunctionMember(BoundModule module, FunctionMember member)
     {
         Binder binder = new Binder(module.scope);
-
-        BoundBlockStatement body = binder.BindBlockStatement(member.body);
         TypeSymbol returnType = binder.BindTypeClause(member.returnClause, true);
+
+		binder = new Binder(module.scope, returnType);
+        BoundBlockStatement body = binder.BindBlockStatement(member.body);
 
         List<VariableSymbol> parameters = new List<VariableSymbol>();
         HashSet<string> seenNames = new HashSet<string>();

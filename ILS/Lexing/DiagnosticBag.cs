@@ -161,4 +161,14 @@ public sealed class DiagnosticBag
     {
         Report(span, "ERROR: Function expected '" + expected + "' arguments, but '" + got + "' was provided");
     }
+
+	public void ReportReturnRequiresValue(TextSpan span) 
+	{
+		Report(span, "ERROR: Return requires a return value");
+	}
+	
+	public void ReportReturnRequiresNoValue(TextSpan span) 
+	{
+		Report(span, "ERROR: Return cannot hold a value");
+	}
 }
