@@ -37,6 +37,10 @@ public sealed partial class Emitter
 
     public void EmitModule(BoundModule module)
     {
+        foreach (TypeSymbol member in module.structs)
+        {
+            EmitStructMember(member);
+        }
         foreach (BoundFunctionMember member in module.functions)
         {
             EmitFunctionMember(member);
@@ -89,6 +93,23 @@ public sealed partial class Emitter
         {
             writer.WriteLine("    ret void");
         }
+        writer.WriteLine("}");
+    }
+
+    private void EmitStructMember(TypeSymbol member)
+    {
+        writer.Write(member.llvmName);
+        writer.Write(" = type {");
+        for (int i = 0; i < member.items.Length; i++)
+        {
+            StructItemSymbol symbol = member.items[i];
+            if (i != 0)
+            {
+                writer.Write(", ");
+            }
+            writer.Write(symbol.type.llvmName);
+        }
+
         writer.WriteLine("}");
     }
 

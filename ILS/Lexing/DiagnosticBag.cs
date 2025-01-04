@@ -152,6 +152,11 @@ public sealed class DiagnosticBag
         Report(span, "ERROR: A parameter with the name '" + name + "' is already declared");
     }
 
+    public void ReportAmbiguousStructItemName(TextSpan span, string name)
+    {
+        Report(span, "ERROR: A struct item with the name '" + name + "' is already declared");
+    }
+
 	public void ReportNotAllPathsReturn(TextSpan span, string name) {
 		Report(span, "ERROR: Not all paths return a value '"+name+"'");
 	}

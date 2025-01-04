@@ -90,9 +90,12 @@ public sealed class Parser
 
     private Member ParseMember()
     {
-        if (Current().type == NodeType.FUNCTION_KEYWORD)
+        switch (Current().type)
         {
-            return ParseFunctionMember();
+            case NodeType.FUNCTION_KEYWORD:
+                return ParseFunctionMember();
+            case NodeType.STRUCT_KEYWORD:
+                return ParseStructMember();
         }
         Token current = NextToken();
         diagnostics.ReportUnexpectedToken(current.span, current.type);
@@ -123,6 +126,32 @@ public sealed class Parser
         BlockStatement body = ParseBlockStatement();
 
         return new FunctionMember(functionKeyword, identifierToken, lParenToken, parameters, rParenToken, returnClause, body);
+    }
+
+    private Member ParseStructMember()
+    {
+        Token structKeyword = Match(NodeType.STRUCT_KEYWORD);
+        Token identifierToken = Match(NodeType.IDENTIFIER_TOKEN);
+        Token lBraceToken = Match(NodeType.LBRACE_TOKEN);
+
+        List<StructItem> items = new List<StructItem>();
+
+        while (Current().type != NodeType.RBRACE_TOKEN && Current().type != NodeType.EOF_TOKEN)
+        {
+            items.Add(ParseStructMemberItem());
+        }
+
+        Token rBraceToken = Match(NodeType.RBRACE_TOKEN);
+        return new StructMember(structKeyword, identifierToken, lBraceToken, items, rBraceToken);
+    }
+
+    private StructItem ParseStructMemberItem()
+    {
+        Token identifierToken = Match(NodeType.IDENTIFIER_TOKEN);
+        TypeClause typeClause = ParseTypeClause();
+        Token semiToken = Match(NodeType.SEMI_TOKEN);
+
+        return new StructItem(identifierToken, typeClause, semiToken);
     }
 
     private Statement ParseStatement()
@@ -251,15 +280,17 @@ public sealed class Parser
         return new ContinueStatement(breakKeyword, semicolonToken);
     }
 
-	private ReturnStatement ParseReturnStatement() {
-		Token returnToken = Match(NodeType.RETURN_KEYWORD);
-		Expression value = null;
-		if (Current().type != NodeType.SEMI_TOKEN) {
-			value = ParseExpression();
-		}
-		Token semicolonToken = Match(NodeType.SEMI_TOKEN);
-		return new ReturnStatement(returnToken, value, semicolonToken);
-	}
+    private ReturnStatement ParseReturnStatement()
+    {
+        Token returnToken = Match(NodeType.RETURN_KEYWORD);
+        Expression value = null;
+        if (Current().type != NodeType.SEMI_TOKEN)
+        {
+            value = ParseExpression();
+        }
+        Token semicolonToken = Match(NodeType.SEMI_TOKEN);
+        return new ReturnStatement(returnToken, value, semicolonToken);
+    }
 
     private ExpressionStatement ParseExpressionStatement()
     {

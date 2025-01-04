@@ -39,13 +39,13 @@ public sealed class Binder
     private Scope scope;
     private int localVariableCounter;
     private int loopCounter;
-	private TypeSymbol returnType;
+    private TypeSymbol returnType;
 
     public Binder(Scope globalScope, TypeSymbol returnType = null)
     {
         diagnostics = new DiagnosticBag();
         scope = new Scope(globalScope);
-		this.returnType = returnType;
+        this.returnType = returnType;
         localVariableCounter = 1;
         loopCounter = 0;
     }
@@ -74,7 +74,8 @@ public sealed class Binder
             case NodeType.CONTINUE_STATEMENT:
                 return BindContinueStatement((ContinueStatement)statement);
             case NodeType.RETURN_STATEMENT:
-				return BindReturnStatement((ReturnStatement)statement);default:
+                return BindReturnStatement((ReturnStatement)statement);
+            default:
                 throw new Exception("Unexpected statement");
         }
     }
@@ -163,19 +164,22 @@ public sealed class Binder
         return new BoundContinueStatement();
     }
 
-	private BoundStatement BindReturnStatement(ReturnStatement statement) {
-		if (statement.value == null && returnType != TypeSymbol.voidType) {
-			diagnostics.ReportReturnRequiresValue(statement.returnToken.span);
-			return new BoundReturnStatement(null);
-		}
-		if (statement.value != null && returnType == TypeSymbol.voidType) {
-			diagnostics.ReportReturnRequiresNoValue(statement.returnToken.span);
-			return new BoundReturnStatement(null);
-		}
+    private BoundStatement BindReturnStatement(ReturnStatement statement)
+    {
+        if (statement.value == null && returnType != TypeSymbol.voidType)
+        {
+            diagnostics.ReportReturnRequiresValue(statement.returnToken.span);
+            return new BoundReturnStatement(null);
+        }
+        if (statement.value != null && returnType == TypeSymbol.voidType)
+        {
+            diagnostics.ReportReturnRequiresNoValue(statement.returnToken.span);
+            return new BoundReturnStatement(null);
+        }
 
-		BoundExpression value = BindExpectedExpression(statement.value, returnType);
-		return new BoundReturnStatement(value);
-	}
+        BoundExpression value = BindExpectedExpression(statement.value, returnType);
+        return new BoundReturnStatement(value);
+    }
 
     private ConversionResult ClassifyConversion(BoundExpression expression, TypeSymbol toType, bool isExplicit, bool allowReinterpretation)
     {
@@ -686,9 +690,10 @@ public sealed class Binder
         Binder binder = new Binder(module.scope);
         TypeSymbol returnType = binder.BindTypeClause(member.returnClause, true);
 
-		binder = new Binder(module.scope, returnType);
+        binder = new Binder(module.scope, returnType);
         BoundBlockStatement body = binder.BindBlockStatement(member.body);
-        if (returnType != TypeSymbol.voidType && !CFAScanner.AllPathsReturn(body)) {
+        if (returnType != TypeSymbol.voidType && !CFAScanner.AllPathsReturn(body))
+        {
             module.diagnostics.ReportNotAllPathsReturn(member.identifierToken.span, member.identifierToken.text);
         }
 
@@ -719,9 +724,36 @@ public sealed class Binder
         return new BoundFunctionMember(symbol, body);
     }
 
+    private static TypeSymbol BindStructMember(BoundModule module, StructMember member)
+    {
+        Binder binder = new Binder(module.scope);
+        List<StructItemSymbol> items = new List<StructItemSymbol>();
+        HashSet<string> seenNames = new HashSet<string>();
+        foreach (StructItem item in member.items)
+        {
+            if (!seenNames.Add(item.identifierToken.text))
+            {
+                module.diagnostics.ReportAmbiguousStructItemName(item.identifierToken.span, item.identifierToken.text);
+            }
+            items.Add(new StructItemSymbol(item.identifierToken.text, binder.BindTypeClause(item.typeClause, false)));
+        }
+        TypeSymbol symbol = TypeSymbol.Struct(member.identifierToken.text, items.ToArray());
+
+        module.diagnostics.diagnostics.AddRange(binder.diagnostics.diagnostics);
+        if (!module.scope.TryDeclareType(symbol))
+        {
+            module.diagnostics.ReportSymbolAlreadyDefined(member.identifierToken.span, symbol.name);
+        }
+        return symbol;
+    }
+
     public static BoundModule BindMembers(List<Member> members)
     {
         BoundModule module = new BoundModule();
+        foreach (StructMember member in GetMembers<StructMember>(members, NodeType.STRUCT_MEMBER))
+        {
+            module.structs.Add(BindStructMember(module, member));
+        }
         foreach (FunctionMember member in GetMembers<FunctionMember>(members, NodeType.FUNCTION_MEMBER))
         {
             module.functions.Add(BindFunctionMember(module, member));

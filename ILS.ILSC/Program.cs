@@ -11,13 +11,14 @@ public static class Program
     public static void Main(string[] args)
     {
         string code = """
-                      {
-                        
-                        let a: u16 = 20;
-                        let b: u8 = 30;
-                        let c: u32 = a + b;
-                        c++;
-                        b--;
+                      struct Foo {
+                        x: i32;
+                        y: i64;
+                      }
+                      function foo(): void {
+                        let f: Foo;
+                      }
+                      function main(): void {
                       }
                       """;
         Console.WriteLine(code);
