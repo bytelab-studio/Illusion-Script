@@ -153,8 +153,8 @@ public sealed class Lexer
 				return new Token(NodeType.PIPE_TOKEN, FinishTextSpan(span), "|");
 		}
 
-		position++;
         diagnostics.ReportUnexpectedChar(FinishTextSpan(span), Current());
+		position++;
         return new Token(NodeType.ERROR_TOKEN, FinishTextSpan(span), text.Substring(position - 1, 1));
     }
 
