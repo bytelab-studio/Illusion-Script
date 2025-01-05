@@ -649,6 +649,13 @@ public sealed class Binder
         {
             return TypeSymbol.boolean;
         }
+
+        TypeSymbol lookup = scope.TryLookupType(clause.identifierToken.text);
+        if (lookup != null)
+        {
+            return lookup;
+        }
+
         if (clause.identifierToken.text == TypeSymbol.PTR_NAME)
         {
             if (clause.generics.Count != 1)
