@@ -102,12 +102,16 @@ public sealed class Binder
             BindTypeClause(statement.typeClause, false),
             localVariableCounter++
         );
-        BoundExpression initializer = BindExpectedExpression(statement.initializer, symbol.type);
         if (!scope.TryDeclareVariable(symbol))
         {
             diagnostics.ReportSymbolAlreadyDefined(statement.identifierToken.span, symbol.name);
         }
 
+        if (statement.initializer == null)
+        {
+            return new BoundVariableStatement(symbol, null);
+        }
+        BoundExpression initializer = BindExpectedExpression(statement.initializer, symbol.type);
         return new BoundVariableStatement(symbol, initializer);
     }
 

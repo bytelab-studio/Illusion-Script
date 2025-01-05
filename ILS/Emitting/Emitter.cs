@@ -160,7 +160,10 @@ public sealed partial class Emitter
         writer.Write(", align ");
         writer.WriteLine(statement.variable.type.align);
 
-        EmitExpression(new BoundAssignmentExpression(new BoundVariableExpression(statement.variable), statement.initializer));
+        if (statement.initializer != null)
+        {
+            EmitExpression(new BoundAssignmentExpression(new BoundVariableExpression(statement.variable), statement.initializer));
+        }
     }
 
     private void EmitIfStatement(BoundIfStatement statement)

@@ -221,11 +221,21 @@ public sealed class Parser
         {
             keywordToken = NextToken();
         }
+
         Token identifierToken = Match(NodeType.IDENTIFIER_TOKEN);
         TypeClause typeClause = ParseTypeClause();
+
+        Token semicolonToken;
+        if (Current().type == NodeType.SEMI_TOKEN)
+        {
+            semicolonToken = Match(NodeType.SEMI_TOKEN);
+
+            return new VariableStatement(keywordToken, identifierToken, typeClause, null, null, semicolonToken);
+        }
+
         Token equalsToken = Match(NodeType.EQUALS_TOKEN);
         Expression initializer = ParseExpression();
-        Token semicolonToken = Match(NodeType.SEMI_TOKEN);
+        semicolonToken = Match(NodeType.SEMI_TOKEN);
 
         return new VariableStatement(keywordToken, identifierToken, typeClause, equalsToken, initializer, semicolonToken);
     }
