@@ -96,7 +96,7 @@ public sealed class TypeSymbol
     public static TypeSymbol Struct(string name, StructItemSymbol[] items)
     {
         int size = items.Select(item => item.type.size).Sum();
-        return new TypeSymbol(true, name, "%" + name, size, STRUCT_ALIGN, Array.Empty<TypeSymbol>(), items, TypeFlags.NONE);
+        return new TypeSymbol(true, name, "%" + name, size, STRUCT_ALIGN, Array.Empty<TypeSymbol>(), items, TypeFlags.STRUCT);
     }
 }
 
@@ -107,4 +107,5 @@ public enum TypeFlags
     UNSIGNED,
     INTEGER,
     FLOAT,
+    STRUCT
 }

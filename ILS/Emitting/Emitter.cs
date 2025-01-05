@@ -49,6 +49,9 @@ public sealed partial class Emitter
 
     private void EmitFunctionMember(BoundFunctionMember member)
     {
+        this.labelCounter = 1;
+        this.extLabelCounter = 0;
+
         writer.Write("define dso_local ");
         writer.Write(member.symbol.returnType.llvmName);
         writer.Write(" ");
@@ -318,6 +321,8 @@ public sealed partial class Emitter
                 return EmitTernaryExpression((BoundTernaryExpression)expression);
             case NodeType.CALL_EXPRESSION:
                 return EmitCallExpression((BoundCallExpression)expression);
+            case NodeType.MEMBER_EXPRESSION:
+                return EmitMemberAccessExpression((BoundMemberAccessExpression)expression);
             default:
                 throw new Exception("Unknown expression");
         }
@@ -817,6 +822,22 @@ public sealed partial class Emitter
         writer.WriteLine(")");
 
         return result;
+    }
+
+    private string EmitMemberAccessExpression(BoundMemberAccessExpression expression)
+    {
+        string property = EmitMetaMemberAccessExpression(expression);
+        string value = NextLabel();
+
+        writer.WriteIntend(value);
+        writer.Write(" = load ");
+        writer.Write(expression.item.type.llvmName);
+        writer.Write(", ptr ");
+        writer.Write(property);
+        writer.Write(", align ");
+        writer.WriteLine(expression.target.returnType.align);
+
+        return value;
     }
 
     private bool EndsWithControlFlow(BoundStatement statement)

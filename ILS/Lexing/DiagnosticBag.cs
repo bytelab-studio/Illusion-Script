@@ -157,9 +157,10 @@ public sealed class DiagnosticBag
         Report(span, "ERROR: A struct item with the name '" + name + "' is already declared");
     }
 
-	public void ReportNotAllPathsReturn(TextSpan span, string name) {
-		Report(span, "ERROR: Not all paths return a value '"+name+"'");
-	}
+    public void ReportNotAllPathsReturn(TextSpan span, string name)
+    {
+        Report(span, "ERROR: Not all paths return a value '" + name + "'");
+    }
 
     public void ReportExpressionNotCallable(TextSpan span)
     {
@@ -171,13 +172,23 @@ public sealed class DiagnosticBag
         Report(span, "ERROR: Function expected '" + expected + "' arguments, but '" + got + "' was provided");
     }
 
-	public void ReportReturnRequiresValue(TextSpan span)
-	{
-		Report(span, "ERROR: Return requires a return value");
-	}
+    public void ReportReturnRequiresValue(TextSpan span)
+    {
+        Report(span, "ERROR: Return requires a return value");
+    }
 
-	public void ReportReturnRequiresNoValue(TextSpan span)
-	{
-		Report(span, "ERROR: Return cannot hold a value");
-	}
+    public void ReportReturnRequiresNoValue(TextSpan span)
+    {
+        Report(span, "ERROR: Return cannot hold a value");
+    }
+
+    public void ReportNotAccessible(TextSpan span)
+    {
+        Report(span, "ERROR: Expression is not accessible");
+    }
+
+    public void ReportUnknownProperty(TextSpan span, TypeSymbol symbol, string property)
+    {
+        Report(span, "ERROR: Type '" + symbol.fullName + "' has no property '" + property + "'");
+    }
 }

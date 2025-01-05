@@ -330,7 +330,7 @@ public sealed class Parser
 
     private Expression ParsePostOperationExpression()
     {
-        Expression left = ParseAccessExpression();
+        Expression left = ParseCallExpression();
         if (Current().type == NodeType.AS_KEYWORD)
         {
             Token asKeyword = NextToken();
@@ -358,7 +358,7 @@ public sealed class Parser
         return left;
     }
 
-    private Expression ParseAccessExpression()
+    private Expression ParseCallExpression()
     {
         Expression left = ParseBinaryExpression(0);
 
@@ -399,7 +399,7 @@ public sealed class Parser
         }
         else
         {
-            left = ParsePrimaryExpression();
+            left = ParseAccessExpression();
         }
 
         while (true)
@@ -412,6 +412,26 @@ public sealed class Parser
             Token operatorToken = NextToken();
             Expression right = ParseBinaryExpression(precedence);
             left = new BinaryExpression(left, operatorToken, right);
+        }
+
+        return left;
+    }
+
+    private Expression ParseAccessExpression()
+    {
+        Expression left = ParsePrimaryExpression();
+        while (true)
+        {
+            if (Current().type == NodeType.DOT_TOKEN)
+            {
+                Token dotToken = Match(NodeType.DOT_TOKEN);
+                Token identifierToken = Match(NodeType.IDENTIFIER_TOKEN);
+
+                left = new MemberAccessExpression(left, dotToken, identifierToken);
+                continue;
+            }
+
+            break;
         }
 
         return left;

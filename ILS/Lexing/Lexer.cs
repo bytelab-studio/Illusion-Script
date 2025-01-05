@@ -82,6 +82,9 @@ public sealed class Lexer
 			case ',':
 				position++;
 				return new Token(NodeType.COMMA_TOKEN, FinishTextSpan(span), ",");
+			case '.':
+				position++;
+				return new Token(NodeType.DOT_TOKEN, FinishTextSpan(span), ".");
 			case '+':
 				if (Peek(1) == '+') {
 					position += 2;

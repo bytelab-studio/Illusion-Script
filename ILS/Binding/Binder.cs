@@ -369,6 +369,8 @@ public sealed class Binder
                 return BindTernaryExpression((TernaryExpression)expression);
             case NodeType.CALL_EXPRESSION:
                 return BindCallExpression((CallExpression)expression);
+            case NodeType.MEMBER_EXPRESSION:
+                return BindMemberAccessExpression((MemberAccessExpression)expression);
             default:
                 throw new Exception("Unexptected expression");
         }
@@ -496,7 +498,7 @@ public sealed class Binder
     private BoundExpression BindAssignmentExpression(AssignmentExpression expression)
     {
         BoundExpression fieldExpression = BindExpression(expression.fieldExpression);
-        if (fieldExpression.type != NodeType.VARIABLE_EXPRESSION && fieldExpression.type != NodeType.DEREFERENCE_EXPRESSION)
+        if (fieldExpression.type != NodeType.VARIABLE_EXPRESSION && fieldExpression.type != NodeType.DEREFERENCE_EXPRESSION && fieldExpression.type != NodeType.MEMBER_EXPRESSION)
         {
             diagnostics.ReportNotAssignable(expression.fieldExpression.span, expression.fieldExpression.type);
         }
@@ -611,6 +613,28 @@ public sealed class Binder
         return new BoundCallExpression(callee, arguments.ToArray());
     }
 
+    private BoundExpression BindMemberAccessExpression(MemberAccessExpression expression)
+    {
+        BoundExpression target = BindExpression(expression.target);
+        if (!target.returnType.flags.HasFlag(TypeFlags.STRUCT) && !target.returnType.Equals(TypeSymbol.error))
+        {
+            diagnostics.ReportNotAccessible(expression.target.span);
+            return new BoundErrorExpression();
+        }
+
+        for (int i = 0; i < target.returnType.items.Length; i++)
+        {
+            StructItemSymbol item = target.returnType.items[i];
+            if (item.name == expression.property.text)
+            {
+                return new BoundMemberAccessExpression(target, item, i);
+            }
+        }
+
+        diagnostics.ReportUnknownProperty(expression.property.span, target.returnType, expression.property.text);
+        return new BoundErrorExpression();
+    }
+
     private TypeSymbol BindTypeClause(TypeClause clause, bool allowVoid)
     {
         if (allowVoid && clause.identifierToken.text == TypeSymbol.voidType.name)
@@ -698,15 +722,10 @@ public sealed class Binder
 
     private static BoundFunctionMember BindFunctionMember(BoundModule module, FunctionMember member)
     {
-        Binder binder = new Binder(module.scope);
+        Scope scope = new Scope(module.scope);
+        Binder binder = new Binder(scope);
         TypeSymbol returnType = binder.BindTypeClause(member.returnClause, true);
-
-        binder = new Binder(module.scope, returnType);
-        BoundBlockStatement body = binder.BindBlockStatement(member.body);
-        if (returnType != TypeSymbol.voidType && !CFAScanner.AllPathsReturn(body))
-        {
-            module.diagnostics.ReportNotAllPathsReturn(member.identifierToken.span, member.identifierToken.text);
-        }
+        binder.returnType = returnType;
 
         List<VariableSymbol> parameters = new List<VariableSymbol>();
         HashSet<string> seenNames = new HashSet<string>();
@@ -720,11 +739,18 @@ public sealed class Binder
             TypeSymbol type = binder.BindTypeClause(parameter.clause, false);
             VariableSymbol variableSymbol = new VariableSymbol(false, parameter.identifierToken.text, type, binder.localVariableCounter++);
             parameters.Add(variableSymbol);
-            if (!module.scope.TryDeclareVariable(variableSymbol))
+            if (!scope.TryDeclareVariable(variableSymbol))
             {
                 module.diagnostics.ReportSymbolAlreadyDefined(parameter.identifierToken.span, variableSymbol.name);
             }
         }
+
+        BoundBlockStatement body = binder.BindBlockStatement(member.body);
+        if (returnType != TypeSymbol.voidType && !CFAScanner.AllPathsReturn(body))
+        {
+            module.diagnostics.ReportNotAllPathsReturn(member.identifierToken.span, member.identifierToken.text);
+        }
+
         FunctionSymbol symbol = new FunctionSymbol(member.identifierToken.text, parameters.ToArray(), returnType);
 
         module.diagnostics.diagnostics.AddRange(binder.diagnostics.diagnostics);
