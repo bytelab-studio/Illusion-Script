@@ -92,6 +92,8 @@ public sealed class Parser
     {
         switch (Current().type)
         {
+            case NodeType.EXTERN_KEYWORD:
+                return ParseExternFunctionMember();
             case NodeType.FUNCTION_KEYWORD:
                 return ParseFunctionMember();
             case NodeType.STRUCT_KEYWORD:
@@ -100,6 +102,33 @@ public sealed class Parser
         Token current = NextToken();
         diagnostics.ReportUnexpectedToken(current.span, current.type);
         return null;
+    }
+
+    private Member ParseExternFunctionMember()
+    {
+        Token externKeyword = Match(NodeType.EXTERN_KEYWORD);
+        Token functionKeyword = Match(NodeType.FUNCTION_KEYWORD);
+        Token identifierKeyword = Match(NodeType.IDENTIFIER_TOKEN);
+        Token lParenToken = Match(NodeType.LPAREN_TOKEN);
+
+        List<FunctionParameter> parameters = new List<FunctionParameter>();
+
+        while (Current().type  != NodeType.RPAREN_TOKEN && Current().type != NodeType.EOF_TOKEN)
+        {
+            Token parameterIdentifierToken = Match(NodeType.IDENTIFIER_TOKEN);
+            TypeClause clause = ParseTypeClause();
+            parameters.Add(new FunctionParameter(parameterIdentifierToken, clause));
+            if (Current().type != NodeType.RPAREN_TOKEN)
+            {
+                Match(NodeType.COMMA_TOKEN);
+            }
+        }
+
+        Token rParenToken = Match(NodeType.RPAREN_TOKEN);
+        TypeClause returnType = ParseTypeClause();
+        Token semiToken = Match(NodeType.SEMI_TOKEN);
+
+        return new ExternFunctionMember(externKeyword, functionKeyword, identifierKeyword, lParenToken, parameters, rParenToken, returnType, semiToken);
     }
 
     private Member ParseFunctionMember()

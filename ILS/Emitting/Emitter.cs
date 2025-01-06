@@ -41,10 +41,34 @@ public sealed partial class Emitter
         {
             EmitStructMember(member);
         }
+        foreach (FunctionSymbol member in module.externFunctions)
+        {
+            EmitExternFunctionMember(member);
+        }
         foreach (BoundFunctionMember member in module.functions)
         {
             EmitFunctionMember(member);
         }
+    }
+
+    private void EmitExternFunctionMember(FunctionSymbol member)
+    {
+        writer.Write("declare ");
+        writer.Write(member.returnType.llvmName);
+        writer.Write(" ");
+        writer.Write(member.llvmName);
+        writer.Write("(");
+        for (int i = 0; i < member.parameters.Length; i++)
+        {
+            if (i != 0)
+            {
+                writer.Write(", ");
+                VariableSymbol parameter = member.parameters[i];
+                writer.Write(parameter.type.llvmName);
+            }
+        }
+
+        writer.WriteLine(")");
     }
 
     private void EmitFunctionMember(BoundFunctionMember member)

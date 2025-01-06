@@ -226,6 +226,8 @@ public sealed class Lexer
 				return NodeType.RETURN_KEYWORD;
 			case "struct":
 				return NodeType.STRUCT_KEYWORD;
+			case "extern":
+				return NodeType.EXTERN_KEYWORD;
 			default:
 				return NodeType.IDENTIFIER_TOKEN;
 		}
