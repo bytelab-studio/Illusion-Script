@@ -8,6 +8,7 @@ namespace ILS.Binding;
 public sealed class BoundModule
 {
     public Scope scope;
+    public List<FunctionSymbol> externFunctions;
     public List<BoundFunctionMember> functions;
     public List<TypeSymbol> structs;
     public DiagnosticBag diagnostics;
@@ -16,6 +17,7 @@ public sealed class BoundModule
     public BoundModule()
     {
         scope = new Scope(null);
+        externFunctions = new List<FunctionSymbol>();
         functions = new List<BoundFunctionMember>();
         structs = new List<TypeSymbol>();
         diagnostics = new DiagnosticBag();

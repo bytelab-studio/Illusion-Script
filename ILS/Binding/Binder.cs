@@ -498,7 +498,8 @@ public sealed class Binder
     private BoundExpression BindAssignmentExpression(AssignmentExpression expression)
     {
         BoundExpression fieldExpression = BindExpression(expression.fieldExpression);
-        if (fieldExpression.type != NodeType.VARIABLE_EXPRESSION && fieldExpression.type != NodeType.DEREFERENCE_EXPRESSION && fieldExpression.type != NodeType.MEMBER_EXPRESSION)
+        if (fieldExpression.type != NodeType.VARIABLE_EXPRESSION && fieldExpression.type != NodeType.DEREFERENCE_EXPRESSION &&
+            fieldExpression.type != NodeType.MEMBER_EXPRESSION)
         {
             diagnostics.ReportNotAssignable(expression.fieldExpression.span, expression.fieldExpression.type);
         }
@@ -720,6 +721,40 @@ public sealed class Binder
     private static IEnumerable<T> GetMembers<T>(IEnumerable<Member> members, NodeType type) where T : Member =>
         members.Where(member => member.type == type).Cast<T>();
 
+    private static FunctionSymbol BindExternFunctionMember(BoundModule module, ExternFunctionMember member)
+    {
+        Scope scope = new Scope(module.scope);
+        Binder binder = new Binder(scope);
+        TypeSymbol returnType = binder.BindTypeClause(member.returnType, true);
+
+        List<VariableSymbol> parameters = new List<VariableSymbol>();
+        HashSet<string> seenNames = new HashSet<string>();
+
+        foreach (FunctionParameter parameter in member.parameters)
+        {
+            if (!seenNames.Add(parameter.identifierToken.text))
+            {
+                module.diagnostics.ReportAmbiguousParameterName(parameter.identifierToken.span, parameter.identifierToken.text);
+            }
+            TypeSymbol type = binder.BindTypeClause(parameter.clause, false);
+            VariableSymbol variableSymbol = new VariableSymbol(false, parameter.identifierToken.text, type, 0);
+            parameters.Add(variableSymbol);
+            if (!scope.TryDeclareVariable(variableSymbol))
+            {
+                module.diagnostics.ReportSymbolAlreadyDefined(parameter.identifierToken.span, variableSymbol.name);
+            }
+        }
+
+        FunctionSymbol symbol = new FunctionSymbol(member.identifierKeyword.text, parameters.ToArray(), returnType);
+        module.diagnostics.diagnostics.AddRange(binder.diagnostics.diagnostics);
+        if (!module.scope.TryDeclareFunction(symbol))
+        {
+            module.diagnostics.ReportSymbolAlreadyDefined(member.identifierKeyword.span, member.identifierKeyword.text);
+        }
+
+        return symbol;
+    }
+
     private static BoundFunctionMember BindFunctionMember(BoundModule module, FunctionMember member)
     {
         Scope scope = new Scope(module.scope);
@@ -790,6 +825,10 @@ public sealed class Binder
         foreach (StructMember member in GetMembers<StructMember>(members, NodeType.STRUCT_MEMBER))
         {
             module.structs.Add(BindStructMember(module, member));
+        }
+        foreach (ExternFunctionMember member in GetMembers<ExternFunctionMember>(members, NodeType.EXTERN_FUNCTION_MEMBER))
+        {
+            module.externFunctions.Add(BindExternFunctionMember(module, member));
         }
         foreach (FunctionMember member in GetMembers<FunctionMember>(members, NodeType.FUNCTION_MEMBER))
         {
