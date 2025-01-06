@@ -37,6 +37,10 @@ public sealed partial class Emitter
 
     public void EmitModule(BoundModule module)
     {
+        foreach (TypeSymbol member in module.structs)
+        {
+            EmitStructMember(member);
+        }
         foreach (BoundFunctionMember member in module.functions)
         {
             EmitFunctionMember(member);
@@ -45,6 +49,9 @@ public sealed partial class Emitter
 
     private void EmitFunctionMember(BoundFunctionMember member)
     {
+        this.labelCounter = 1;
+        this.extLabelCounter = 0;
+
         writer.Write("define dso_local ");
         writer.Write(member.symbol.returnType.llvmName);
         writer.Write(" ");
@@ -89,6 +96,23 @@ public sealed partial class Emitter
         {
             writer.WriteLine("    ret void");
         }
+        writer.WriteLine("}");
+    }
+
+    private void EmitStructMember(TypeSymbol member)
+    {
+        writer.Write(member.llvmName);
+        writer.Write(" = type {");
+        for (int i = 0; i < member.items.Length; i++)
+        {
+            StructItemSymbol symbol = member.items[i];
+            if (i != 0)
+            {
+                writer.Write(", ");
+            }
+            writer.Write(symbol.type.llvmName);
+        }
+
         writer.WriteLine("}");
     }
 
@@ -139,7 +163,10 @@ public sealed partial class Emitter
         writer.Write(", align ");
         writer.WriteLine(statement.variable.type.align);
 
-        EmitExpression(new BoundAssignmentExpression(new BoundVariableExpression(statement.variable), statement.initializer));
+        if (statement.initializer != null)
+        {
+            EmitExpression(new BoundAssignmentExpression(new BoundVariableExpression(statement.variable), statement.initializer));
+        }
     }
 
     private void EmitIfStatement(BoundIfStatement statement)
@@ -294,6 +321,8 @@ public sealed partial class Emitter
                 return EmitTernaryExpression((BoundTernaryExpression)expression);
             case NodeType.CALL_EXPRESSION:
                 return EmitCallExpression((BoundCallExpression)expression);
+            case NodeType.MEMBER_EXPRESSION:
+                return EmitMemberAccessExpression((BoundMemberAccessExpression)expression);
             default:
                 throw new Exception("Unknown expression");
         }
@@ -793,6 +822,22 @@ public sealed partial class Emitter
         writer.WriteLine(")");
 
         return result;
+    }
+
+    private string EmitMemberAccessExpression(BoundMemberAccessExpression expression)
+    {
+        string property = EmitMetaMemberAccessExpression(expression);
+        string value = NextLabel();
+
+        writer.WriteIntend(value);
+        writer.Write(" = load ");
+        writer.Write(expression.item.type.llvmName);
+        writer.Write(", ptr ");
+        writer.Write(property);
+        writer.Write(", align ");
+        writer.WriteLine(expression.target.returnType.align);
+
+        return value;
     }
 
     private bool EndsWithControlFlow(BoundStatement statement)

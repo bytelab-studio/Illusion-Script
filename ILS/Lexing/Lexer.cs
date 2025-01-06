@@ -82,6 +82,9 @@ public sealed class Lexer
 			case ',':
 				position++;
 				return new Token(NodeType.COMMA_TOKEN, FinishTextSpan(span), ",");
+			case '.':
+				position++;
+				return new Token(NodeType.DOT_TOKEN, FinishTextSpan(span), ".");
 			case '+':
 				if (Peek(1) == '+') {
 					position += 2;
@@ -153,8 +156,8 @@ public sealed class Lexer
 				return new Token(NodeType.PIPE_TOKEN, FinishTextSpan(span), "|");
 		}
 
-		position++;
         diagnostics.ReportUnexpectedChar(FinishTextSpan(span), Current());
+		position++;
         return new Token(NodeType.ERROR_TOKEN, FinishTextSpan(span), text.Substring(position - 1, 1));
     }
 
@@ -221,7 +224,8 @@ public sealed class Lexer
                 return NodeType.FUNCTION_KEYWORD;
 			case "return":
 				return NodeType.RETURN_KEYWORD;
-
+			case "struct":
+				return NodeType.STRUCT_KEYWORD;
 			default:
 				return NodeType.IDENTIFIER_TOKEN;
 		}
